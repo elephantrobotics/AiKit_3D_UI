@@ -307,8 +307,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         Returns: None
 
         """
-        btn_list = [self.to_origin_btn, self.crawl_btn, self.discern_btn, self.place_btn, self.current_coord_btn,
-                    self.image_coord_btn, self.open_camera_btn]
+        btn_list = [self.to_origin_btn, self.crawl_btn, self.place_btn, self.current_coord_btn,
+                    self.image_coord_btn, self.discern_btn, self.open_camera_btn ]
         green_btn = [self.open_camera_btn, self.current_coord_btn, self.image_coord_btn]
         if status:
             for b in btn_list:
@@ -569,7 +569,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 'yolov8 gripper': 'yolo_gripper_offset.txt',
             }
             file_path = file_paths.get(self.algorithm_mode)
-            print('file_path1:', file_path)
             if file_path:
                 with open(libraries_path + '/offset/' + file_path, 'r', encoding='utf-8') as f:
                     offset = f.read().splitlines()
@@ -613,7 +612,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 'yolov8 gripper': 'yolo_gripper_offset.txt',
             }
             file_path = file_paths.get(self.algorithm_mode)
-            print('file_path2:', file_path)
             if file_path:
                 with open(libraries_path + '/offset/' + file_path, 'w', encoding='utf-8') as f:
                     f.write(str(offset))
@@ -655,8 +653,9 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             else:
                 self.is_discern = True
                 self.btn_color(self.discern_btn, 'red')
-                print('is_discern2:', self.is_discern)
-                self.start_detect()
+                # self.start_detect()
+                start_detect = threading.Thread(target=self.start_detect)
+                start_detect.start()
         except Exception as e:
             e = traceback.format_exc()
             self.logger.error('identify anomalies' + str(e))
@@ -672,7 +671,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             if self.is_crawl:
                 self.is_crawl = False
                 self.btn_color(self.crawl_btn, 'blue')
-                print('is_crawl_1:', self.is_crawl)
             else:
                 self.is_crawl = True
                 self.btn_color(self.crawl_btn, 'red')
@@ -680,8 +678,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     pallet = threading.Thread(target=self.start_pallet_crawl)
                     pallet.start()
                 else:
-                    self.robot_pick_move()
-                print('is_crawl_2:', self.is_crawl)
+                    crawl_move = threading.Thread(target=self.robot_pick_move)
+                    crawl_move.start()
         except Exception as e:
             e = traceback.format_exc()
             self.logger.error(str(e))
@@ -696,11 +694,9 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             if self.is_place:
                 self.is_place = False
                 self.btn_color(self.place_btn, 'blue')
-                print('is_place_1:', self.is_place)
             else:
                 self.is_place = True
                 self.btn_color(self.place_btn, 'red')
-                print('is_place_2:', self.is_place)
                 self.robot_place_move()
         except Exception as e:
             e = traceback.format_exc()
@@ -815,12 +811,12 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     depth_visu_frame = depth_visu_frame.astype(np.uint8)
                     depth_visu_frame = cv2.cvtColor(depth_visu_frame, cv2.COLOR_GRAY2BGR)
                     # Convert BGR to RGB
-                    color_frame = cv2.cvtColor(color_frame, cv2.COLOR_BGR2RGB)
+                    color_frame_qt = cv2.cvtColor(color_frame, cv2.COLOR_BGR2RGB)
                     color_frame_qimage = QImage(
-                        color_frame.data,
-                        color_frame.shape[1],
-                        color_frame.shape[0],
-                        color_frame.strides[0],
+                        color_frame_qt.data,
+                        color_frame_qt.shape[1],
+                        color_frame_qt.shape[0],
+                        color_frame_qt.strides[0],
                         QImage.Format.Format_RGB888,
                     )
                     depth_frame_qimage = QImage(
@@ -843,11 +839,13 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 if res:
                     # 获取检测到的颜色名称
                     detector.draw_result(color_frame, res)
+                    # Convert BGR to RGB
+                    color_frame_qt = cv2.cvtColor(color_frame, cv2.COLOR_BGR2RGB)
                     color_frame_qimage = QImage(
-                        color_frame.data,
-                        color_frame.shape[1],
-                        color_frame.shape[0],
-                        color_frame.strides[0],
+                        color_frame_qt.data,
+                        color_frame_qt.shape[1],
+                        color_frame_qt.shape[0],
+                        color_frame_qt.strides[0],
                         QImage.Format.Format_RGB888,
                     )
                     color_pixmap = QPixmap.fromImage(color_frame_qimage)
@@ -874,6 +872,10 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                         floor_depth = floor_depth_gripper
                     # find lowest depth (highest in pile)
                     depth, (x, y) = min(depth_pos_pack)
+                    if np.isnan(depth):
+                        self.logger.error('相机无法正确获取深度信息:{}'.format(depth))
+                        depth = 320
+
                     x, y = int(x), int(y)
                     z = int(floor_depth - depth)
                     # transform angle from camera frame to arm frame
@@ -902,7 +904,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         Returns: None
 
         """
-        print('2222222222222222222222')
         self.algorithm_mode = self.comboBox_function.currentText()
         if not self.is_open_camera:
             self.open_camera = ObbrecCamera()
@@ -1008,6 +1009,10 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     # 现在您可以通过深度值来查找相应的坐标点
                     depth_to_match = min(depth_values)
                     matched_coordinates = depth_coordinate_map.get(depth_to_match)
+                    if np.isnan(depth_to_match):
+                        self.logger.error('相机无法正确获取深度信息:{}'.format(depth_to_match))
+                        depth_to_match = 320
+
                     x, y, z = 0, 0, 0
                     if self.algorithm_mode in self.algorithm_pump:
                         floor_depth = floor_depth_pump
@@ -1240,6 +1245,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(3)
                     self.mc.send_coord(3, 90, 50)
                     time.sleep(2.5)
+                self.is_crawl = False
+                self.btn_color(self.crawl_btn, 'blue')
             else:
                 self.logger.error('请开启识别程序....')
         except Exception as e:
@@ -1311,8 +1318,9 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             self.algorithm_mode = self.comboBox_function.currentText()
             while self.is_discern:
                 if self.algorithm_mode in ['Depalletizing pump', '拆码垛 吸泵']:
-                    self.pallet_auto_pick()
-                    time.sleep(0.2)
+                    if self.pos_x != 0 and self.pos_y != 0 and self.pos_z != 0:
+                        self.pallet_auto_pick()
+                        time.sleep(0.2)
                 else:
                     self.logger.info('当前不是拆码垛程序!!!')
         except Exception as e:
@@ -1341,6 +1349,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 time.sleep(3)
                 if self.algorithm_mode in self.algorithm_pump:
                     pump_off(self.mc)
+                    self.mc.send_angles(arm_idle_angle, 50)
+                    time.sleep(4)
                 else:
                     open_gripper(self.mc)
                     time.sleep(3)

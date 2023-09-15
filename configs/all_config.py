@@ -38,8 +38,8 @@ target_base_pos3d_gripper = (160, 0, -33)
 final_coord_offset_pump = [5, 0, 0]
 final_coord_offset_gripper = [0, 0, 0]
 # camera distance to floor
-floor_depth_pump = 480
-floor_depth_gripper = 380
+floor_depth_pump = 385
+floor_depth_gripper = 385
 
 # 工具坐标系
 tool_frame_pump = [0, 0, 80, 0, 0, 0]

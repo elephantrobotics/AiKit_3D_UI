@@ -6,7 +6,6 @@ from pathlib import Path
 sys.path.append(str(Path("./libs").resolve()))
 os.add_dll_directory(str(Path("./libs").resolve()))
 print(sys.path)
-from demos.pump_demo_driver_copy_copy import DriverDemo
 import Device
 
 print("OK")
@@ -67,4 +66,3 @@ class CameraVideoThread(QThread):
                 self.log.error(e)
 
 '''
-
