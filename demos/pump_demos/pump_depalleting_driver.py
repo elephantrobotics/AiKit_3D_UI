@@ -189,7 +189,7 @@ def arm_move(x, y, z, offset_3d=(0, 0, 0)):
 
     # adjust final offset
     off_x, off_y, off_z = offset_3d
-    target_pos3d[0] += final_coord_offset[0] + off_x
+    target_pos3d[0] += final_coord_offset[0] + off_x + 5
     target_pos3d[1] += final_coord_offset[1] + off_y
     target_pos3d[2] += final_coord_offset[2] + z - 20 + off_z
     # add angle
@@ -197,26 +197,27 @@ def arm_move(x, y, z, offset_3d=(0, 0, 0)):
 
     # send angle
     # move x-y first
-    coord_xy = target_pos3d.copy()
-    coord_xy[2] = 80
+    coord_xy = target_pos3d.copy()[:3]
+    coord_xy[2] = 50
     print(f"X-Y move: {coord_xy}")
     # arm.send_angle(1, 0, 50)
     # time.sleep(3)
-    arm.send_coords(coord_xy, 50)
+    # arm.send_coords(coord_xy, 50)
+    # time.sleep(3)
+    position_move(arm, *coord_xy)
     time.sleep(3)
 
     # send target angle
-    arm.send_coords(target_pos3d, 50)
+    arm.send_coords(target_pos3d, 25, 1)
     print(f"Target move: {target_pos3d}")
-    time.sleep(4)
+    time.sleep(3)
     print(f"Actual coord : {arm.get_coords()}")
-    time.sleep(0.1)
     pump_on(arm)
-    time.sleep(5)
+    time.sleep(3)
 
     # elevate first
-    arm.send_coord(3, 100, 50)
-    time.sleep(5)
+    arm.send_coord(3, 90, 25)
+    time.sleep(4)
 
     # sent to drop point
     arm.send_angles(box_position[random_number], 50)

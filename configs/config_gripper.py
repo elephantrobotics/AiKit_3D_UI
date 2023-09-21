@@ -3,7 +3,7 @@ arm_idle_angle = [-90, 0, 0, 0, 90, 0]
 arm_pick_hover_angle = [0, 30, -27, 0, 90, 0]
 arm_drop_angle = [90, 30, -27, 0, 90, 90]
 # 裁剪目标正方形的边长
-crop_size = 130
+crop_size = 135
 
 # 缩放系数
 zoom_factor = 3
@@ -13,7 +13,8 @@ zoom_factor = 3
 final_frame_size = crop_size * zoom_factor
 
 # 裁剪偏移，裁剪出Camera Zone
-crop_offset = (5, -8)
+# crop_offset = (5, -8)
+crop_offset = (20, -12)
 
 # 目标平面的实际大小
 target_plan_real_world_size = 108
@@ -29,7 +30,7 @@ target_base_pos3d = (160, 0, -33)
 final_coord_offset = [0, 0, 0]
 
 # camera distance to floor
-floor_depth = 380
+floor_depth = 385
 
 # 工具坐标系
 tool_frame = [0, -10, 80, 0, 0, 0]

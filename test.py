@@ -1,6 +1,7 @@
 import os
 import sys
 import threading
+import time
 from pathlib import Path
 
 sys.path.append(str(Path("./libs").resolve()))
@@ -66,3 +67,55 @@ class CameraVideoThread(QThread):
                 self.log.error(e)
 
 '''
+
+from pymycobot.mecharm import MechArm
+from Utils.arm_controls import *
+from configs.all_config import *
+
+mc = MechArm('COM27', 115200)
+
+
+def robot_pick_move():
+    mc.send_angles([0, 30, -27, 0, 90, 90], 50)
+    time.sleep(3)
+
+    mc.send_coords([166.8, 8.8, 20, -177, 0, 90], 25, 1)
+    time.sleep(3)
+
+    pump_on(mc)
+    time.sleep(1.5)
+    mc.send_coord(3, 90, 25)
+    time.sleep(3)
+
+    mc.send_angles(box_position[3], 50)
+    time.sleep(3)
+    pump_off(mc)
+    time.sleep(1.5)
+    mc.send_angles([-90, 0, 0, 0, 90, 0], 50)
+    time.sleep(4)
+
+
+def crawl_move_thread():
+    # 获取锁
+    crawl_move_lock = threading.Lock()
+    crawl_move_lock.acquire()
+    try:
+        # 执行需要加锁的操作
+        robot_pick_move()
+    finally:
+        # 释放锁
+        crawl_move_lock.release()
+
+
+# thread = threading.Thread(target=crawl_move_thread)
+# thread.start()
+
+mc.send_angles([0, 30, -27, 0, 90, 90], 50)
+time.sleep(3)
+status = mc.is_in_position([0, 30, -27, 0, 90, 90], 0)
+print(status)
+if status:
+    print('已到达')
+else:
+    print(mc.get_angles())
+    print('未到达')

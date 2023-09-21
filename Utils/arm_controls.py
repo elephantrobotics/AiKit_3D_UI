@@ -27,7 +27,7 @@ def position_move(arm: MechArm, x, y, z):
         curr_rotation = arm.get_coords()[-3:]
         time.sleep(1)
 
-    curr_rotation[0] = 175
+    curr_rotation[0] = 177
     curr_rotation[1] = 0
     target_coord = [x, y, z]
     target_coord.extend(curr_rotation)
@@ -40,7 +40,7 @@ def release_gripper(arm: MechArm):
 
 
 def open_gripper(arm: MechArm):
-    arm.set_gripper_value(80, 100)
+    arm.set_gripper_value(95, 100)
 
 
 def close_gripper(arm: MechArm):

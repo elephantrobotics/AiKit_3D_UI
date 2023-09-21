@@ -160,16 +160,18 @@ def arm_move(color_id, x, y, z, angle, offset_3d=(0, 0, 0)):
     coord[2] += final_coord_offset[2] + off_z + z
 
     # add angle
-    rz = 90 + (90 - angle)
+    # rz = 90 + (90 - angle)
+    rz = 90 + (90 - 10)
     coord.extend([175, 0, rz])
 
     # send angle
     # move x-y first
-    coord_xy = coord.copy()
+    coord_xy = coord.copy()[:3]
     # set z still
     coord_xy[2] = 50
     print(f"X-Y move: {coord_xy}")
-    arm.send_coords(coord_xy, 50)
+    # arm.send_coords(coord_xy, 50, 1)
+    position_move(arm, *coord_xy)
     time.sleep(3)
 
     open_gripper(arm)
@@ -177,7 +179,7 @@ def arm_move(color_id, x, y, z, angle, offset_3d=(0, 0, 0)):
     time.sleep(3)
 
     # send target angle
-    arm.send_coords(coord, 50)
+    arm.send_coords(coord, 25, 1)
     print(f"Target move: {coord}")
     time.sleep(3)
 

@@ -19,25 +19,25 @@ coords_transformer = CoordCalc(
     plane_frame_size_ratio,
 )
 
-# plist = get_port_list()
+plist = get_port_list()
 # print(plist)
 
-# arm = MechArm(plist[0])
+arm = MechArm(plist[0])
 
 
 def driver(detector, offset_3d=(0, 0, 0)):
     cam = ObbrecCamera()
     cam.capture()
     # arm = MechArm(arm_serial_port)
-    # arm.send_angles(arm_idle_angle, 50)
-    # arm.set_fresh_mode(0)
-    # time.sleep(1)
-    # arm.set_tool_reference(tool_frame)
-    # time.sleep(1)
-    # arm.set_end_type(1)
-    # time.sleep(1)
-    # pump_off(arm)
-    # time.sleep(3)
+    arm.send_angles(arm_idle_angle, 50)
+    arm.set_fresh_mode(0)
+    time.sleep(1)
+    arm.set_tool_reference(tool_frame)
+    time.sleep(1)
+    arm.set_end_type(1)
+    time.sleep(1)
+    pump_off(arm)
+    time.sleep(3)
 
     while True:
         cam.update_frame()
@@ -100,7 +100,7 @@ def driver(detector, offset_3d=(0, 0, 0)):
             x, y = int(x), int(y)
             z = int(floor_depth - depth)
             # transform angle from camera frame to arm frame
-            print(f"Raw x,y,z : {x} {y} {z}")
+            print(f"Raw x,y,z, depth : {x} {y} {z} {depth}")
             detected_name = detector.detected_name
             color_id = 0
             # 根据识别到的颜色设置投放点
@@ -112,7 +112,7 @@ def driver(detector, offset_3d=(0, 0, 0)):
                 color_id = 2
             elif detected_name == "yellow" or detected_name == "Circle":
                 color_id = 3
-            # arm_move(color_id, x, y, z, offset_3d)
+            arm_move(color_id, x, y, z, offset_3d)
 
 
 def arm_move(color_id, x, y, z, offset_3d=(0, 0, 0)):
@@ -148,14 +148,14 @@ def arm_move(color_id, x, y, z, offset_3d=(0, 0, 0)):
     # send angle
     # move x-y first, zet z fixed
     target_xy_pos3d = coord.copy()[:3]
-    target_xy_pos3d[2] = 80
+    target_xy_pos3d[2] = 50
     print(f"X-Y move: {target_xy_pos3d}")
     position_move(arm, *target_xy_pos3d)
     time.sleep(3)
 
     # send target angle
     print(f"Target move: {coord}")
-    arm.send_coords(coord, 50)
+    arm.send_coords(coord, 25, 1)
     time.sleep(3)
 
     pump_on(arm)

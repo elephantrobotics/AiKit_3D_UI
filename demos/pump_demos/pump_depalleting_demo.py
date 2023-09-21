@@ -16,4 +16,4 @@ from demos.pump_demos.pump_depalleting_driver import driver
 
 
 if __name__ == "__main__":
-    driver(YOLODetector(), (0, 0, -75))
+    driver(YOLODetector(), (-10, 0, -10))
