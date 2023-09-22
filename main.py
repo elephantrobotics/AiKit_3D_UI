@@ -359,6 +359,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             self.xoffset_edit.setEnabled(True)
             self.yoffset_edit.setEnabled(True)
             self.zoffset_edit.setEnabled(True)
+            self.is_pick = True
             # 偏移量设置正则表达式校验器，只允许输入-255 到 255数字
             regex = QRegularExpression(r'^-?(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$')
             validator = QRegularExpressionValidator(regex)
@@ -775,24 +776,14 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 self.is_crawl = True
                 self.btn_color(self.crawl_btn, 'red')
                 if self.algorithm_mode in ['Depalletizing pump', '拆码垛 吸泵']:
-                        self.pallet = threading.Thread(target=self.start_pallet_crawl)
-                        self.pallet.start()
+                    self.pallet = threading.Thread(target=self.start_pallet_crawl)
+                    self.pallet.start()
                 else:
                     crawl_move = threading.Thread(target=self.robot_pick_move)
                     crawl_move.start()
         except Exception as e:
             e = traceback.format_exc()
             self.logger.error(str(e))
-
-    def crawl_move_thread(self):
-        # 获取锁
-        self.crawl_move_lock.acquire()
-        try:
-            # 执行需要加锁的操作
-            self.robot_pick_move()
-        finally:
-            # 释放锁
-            self.crawl_move_lock.release()
 
     def place_function(self):
         """
@@ -1069,8 +1060,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 res = detector.detect(color_frame)
                 if res:
                     if self.is_pick:
-                        # 获取检测到的颜色名称
-                        # detector.draw_result(color_frame, res)
+                        # 获取检测到的类名称
                         for r in res:
                             color_frame = r.plot()
                             # Convert BGR to RGB
@@ -1483,7 +1473,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                         time.sleep(0.2)
                     else:
                         self.logger.info(
-                                    '拆码垛程序已抓取完成!!! x-y-z:{} {} {}'.format(self.pos_x, self.pos_y, self.pos_z))
+                            '拆码垛程序已抓取完成!!! x-y-z:{} {} {}'.format(self.pos_x, self.pos_y, self.pos_z))
                         self.is_crawl = False
                         self.btn_color(self.crawl_btn, 'blue')
                         break
