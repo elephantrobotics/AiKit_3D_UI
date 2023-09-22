@@ -948,47 +948,48 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     continue
                 res = detector.detect(color_frame)
                 if res:
-                    # 获取检测到的颜色名称
-                    detector.draw_result(color_frame, res)
-                    # Convert BGR to RGB
-                    color_frame_qt = cv2.cvtColor(color_frame, cv2.COLOR_BGR2RGB)
-                    color_frame_qimage = QImage(
-                        color_frame_qt.data,
-                        color_frame_qt.shape[1],
-                        color_frame_qt.shape[0],
-                        color_frame_qt.strides[0],
-                        QImage.Format.Format_RGB888,
-                    )
-                    color_pixmap = QPixmap.fromImage(color_frame_qimage)
-                    self.show_camera_lab_rgb.setPixmap(color_pixmap)
-                    # interpret result
-                    obj_configs = []
-                    for obj in res:
-                        rect = detector.get_rect(obj)
-                        x, y = detector.target_position(obj)
-                        obj_configs.append((rect, (x, y)))
-                    # pack (depth, pos, angle) together
-                    depth_pos_pack = []
-                    for obj in obj_configs:
-                        rect, (x, y) = obj
-                        rect = np.array(rect)
-                        target_depth_frame = crop_poly(depth_frame, rect)
-                        mean_depth = np.sum(target_depth_frame) / np.count_nonzero(
-                            target_depth_frame
+                    if self.is_pick:
+                        # 获取检测到的颜色名称
+                        detector.draw_result(color_frame, res)
+                        # Convert BGR to RGB
+                        color_frame_qt = cv2.cvtColor(color_frame, cv2.COLOR_BGR2RGB)
+                        color_frame_qimage = QImage(
+                            color_frame_qt.data,
+                            color_frame_qt.shape[1],
+                            color_frame_qt.shape[0],
+                            color_frame_qt.strides[0],
+                            QImage.Format.Format_RGB888,
                         )
-                        depth_pos_pack.append((mean_depth, (x, y)))
+                        color_pixmap = QPixmap.fromImage(color_frame_qimage)
+                        self.show_camera_lab_rgb.setPixmap(color_pixmap)
+                        # interpret result
+                        obj_configs = []
+                        for obj in res:
+                            rect = detector.get_rect(obj)
+                            x, y = detector.target_position(obj)
+                            obj_configs.append((rect, (x, y)))
+                        # pack (depth, pos, angle) together
+                        depth_pos_pack = []
+                        for obj in obj_configs:
+                            rect, (x, y) = obj
+                            rect = np.array(rect)
+                            target_depth_frame = crop_poly(depth_frame, rect)
+                            mean_depth = np.sum(target_depth_frame) / np.count_nonzero(
+                                target_depth_frame
+                            )
+                            depth_pos_pack.append((mean_depth, (x, y)))
 
-                    # find lowest depth (highest in pile)
-                    depth, (x, y) = min(depth_pos_pack)
-                    if np.isnan(depth):
-                        self.logger.error('相机无法正确获取深度信息:{}'.format(depth))
-                        depth = 320
-
-                    x, y = int(x), int(y)
-                    z = int(floor_depth - depth)
-                    # transform angle from camera frame to arm frame
-                    self.pos_x, self.pos_y, self.pos_z = x, y, z
-                    print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
+                        # find lowest depth (highest in pile)
+                        depth, (x, y) = min(depth_pos_pack)
+                        if np.isnan(depth):
+                            self.logger.error('相机无法正确获取深度信息:{}'.format(depth))
+                            continue
+                        else:
+                            x, y = int(x), int(y)
+                            z = int(floor_depth - depth)
+                            # transform angle from camera frame to arm frame
+                            self.pos_x, self.pos_y, self.pos_z = x, y, z
+                            print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
             self.logger.info('Recognition has stopped....')
 
         else:
@@ -1306,6 +1307,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 plane_frame_size_ratio,
             )
             if self.is_crawl and self.is_discern and self.pos_x != 0 and self.pos_y != 0 and self.pos_z != 0:
+                self.is_pick = False
                 self.mc.send_angles(arm_pick_hover_angle, 50)
                 time.sleep(3)
                 # get target coord
@@ -1517,6 +1519,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 self.is_place = False
                 self.place_btn.setEnabled(False)
                 self.btn_color(self.place_btn, 'gray')
+                time.sleep(1.5)
+                self.is_pick = True
             else:
                 self.logger.error('放置按钮无响应，请重试！！！')
         except Exception as e:
