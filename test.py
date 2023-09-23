@@ -72,7 +72,7 @@ from pymycobot.mecharm import MechArm
 from Utils.arm_controls import *
 from configs.all_config import *
 
-mc = MechArm('COM27', 115200)
+mc = MechArm('COM34', 115200)
 
 
 def robot_pick_move():
@@ -110,12 +110,16 @@ def crawl_move_thread():
 # thread = threading.Thread(target=crawl_move_thread)
 # thread.start()
 
-mc.send_angles([0, 30, -27, 0, 90, 90], 50)
-time.sleep(3)
-status = mc.is_in_position([0, 30, -27, 0, 90, 90], 0)
-print(status)
-if status:
-    print('已到达')
-else:
-    print(mc.get_angles())
-    print('未到达')
+# mc.send_angles([0, 30, -27, 0, 90, 90], 50)
+# time.sleep(3)
+# status = mc.is_in_position([0, 30, -27, 0, 90, 90], 0)
+# print(status)
+# if status:
+#     print('已到达')
+# else:
+#     print(mc.get_angles())
+#     print('未到达')
+
+print(mc.get_angles(),mc.get_coords())
+
+mc.send_coords([135, 0, -25, 179.9, -9.22, 179.99], 40, 1)

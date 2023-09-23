@@ -7,4 +7,4 @@ from detect.color_detect import ColorDetector
 from demos.pump_demos.pump_demo_driver import driver
 
 if __name__ == "__main__":
-    driver(ColorDetector(), (0, 0, -20))
+    driver(ColorDetector(), (30, 10, -10))

@@ -6,7 +6,7 @@ from pymycobot.utils import get_port_list
 
 sys.path.append(os.getcwd())
 
-from ObbrecCamera import ObbrecCamera
+from RealSenseCamera import RealSenseCamera
 from Utils.mouse_callbacks import *
 from Utils.coord_calc import CoordCalc
 from Utils.crop_tools import crop_frame, crop_poly
@@ -26,7 +26,7 @@ arm = MechArm(plist[0])
 
 
 def driver(detector, offset_3d=(0, 0, 0)):
-    cam = ObbrecCamera()
+    cam = RealSenseCamera()
     cam.capture()
     # arm = MechArm(arm_serial_port)
     arm.send_angles(arm_idle_angle, 50)
@@ -97,6 +97,8 @@ def driver(detector, offset_3d=(0, 0, 0)):
 
             # find lowest depth (highest in pile)
             depth, (x, y) = min(depth_pos_pack)
+            if np.isnan(depth):
+                continue
             x, y = int(x), int(y)
             z = int(floor_depth - depth)
             # transform angle from camera frame to arm frame
@@ -108,7 +110,7 @@ def driver(detector, offset_3d=(0, 0, 0)):
                 color_id = 0
             elif detected_name == "green" or detected_name == "Square":
                 color_id = 1
-            elif detected_name == "blueA" or detected_name == "Rectangle":
+            elif detected_name == "blue" or detected_name == "Rectangle":
                 color_id = 2
             elif detected_name == "yellow" or detected_name == "Circle":
                 color_id = 3
@@ -155,8 +157,8 @@ def arm_move(color_id, x, y, z, offset_3d=(0, 0, 0)):
 
     # send target angle
     print(f"Target move: {coord}")
-    arm.send_coords(coord, 25, 1)
-    time.sleep(3)
+    arm.send_coords(coord, 30, 1)
+    time.sleep(3.5)
 
     pump_on(arm)
     time.sleep(1.5)

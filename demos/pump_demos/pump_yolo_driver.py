@@ -20,7 +20,7 @@ from pymycobot.utils import get_port_list
 
 sys.path.append(os.getcwd())
 
-from ObbrecCamera import ObbrecCamera
+from RealSenseCamera import RealSenseCamera
 from Utils.mouse_callbacks import *
 from Utils.coord_calc import CoordCalc
 from Utils.crop_tools import crop_frame, crop_poly
@@ -43,7 +43,7 @@ arm = MechArm(plist[0])
 
 
 def driver(detector, offset_3d=(0, 0, 0)):
-    cam = ObbrecCamera()
+    cam = RealSenseCamera()
     cam.capture()
 
     arm.send_angles(arm_idle_angle, 50)
@@ -128,10 +128,11 @@ def driver(detector, offset_3d=(0, 0, 0)):
                     depth_res.append(mean_depth)
                 depth_list = tuple(depth_res)
                 depth_pos_pack.append((depth_list, coords))
-            # print('depth_pos_pack:', depth_pos_pack)  # [((394.0, 378.0, 393.0), ((170, 161), (294, 248), (149, 269)))]
+            print('depth_pos_pack:', depth_pos_pack)  # [((394.0, 378.0, 393.0), ((170, 161), (294, 248), (149, 269)))]
             # print('lowest:', min(depth_pos_pack))  # ((394.0, 378.0, 393.0), ((170, 161), (294, 248), (149, 269)))
             # find lowest depth (highest in pile)
             data = min(depth_pos_pack)
+            print('data:', data)
             # 提取深度值和坐标点
             depth_values = data[0]  # (394.0, 378.0, 393.0)
             coordinate_tuples = data[1]  # ((170, 161), (294, 248), (149, 269))
@@ -148,6 +149,8 @@ def driver(detector, offset_3d=(0, 0, 0)):
             # 现在您可以通过深度值来查找相应的坐标点
             depth_to_match = min(depth_values)
             matched_coordinates = depth_coordinate_map.get(depth_to_match)
+            if np.isnan(depth_to_match):
+                continue
             x, y, z = 0, 0, 0
             if matched_coordinates:
                 x, y = matched_coordinates
@@ -156,7 +159,7 @@ def driver(detector, offset_3d=(0, 0, 0)):
                 print(f"深度值 {depth_to_match} 对应的坐标点是 {matched_coordinates}")
             else:
                 print(f"未找到深度值 {depth_to_match} 对应的坐标点")
-
+            # x, y = 180, 271
             print(f"xyz in cam frame: {x} {y} {z}")
             arm_move(x, y, z, offset_3d)
 

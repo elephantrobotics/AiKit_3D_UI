@@ -10,7 +10,7 @@ from pymycobot.utils import get_port_list
 
 sys.path.append(os.getcwd())
 
-from ObbrecCamera import ObbrecCamera
+from RealSenseCamera import RealSenseCamera
 from Utils.mouse_callbacks import *
 from Utils.coord_calc import CoordCalc
 from Utils.crop_tools import crop_frame, crop_poly
@@ -26,25 +26,25 @@ coords_transformer = CoordCalc(
 plist = get_port_list()
 print(plist)
 
-arm = MechArm(plist[0])
+# arm = MechArm(plist[0])
 
 
 def driver(detector, offset_3d=(0, 0, 0)):
-    cam = ObbrecCamera()
+    cam = RealSenseCamera()
     cam.capture()
 
     # arm = MechArm(arm_serial_port)
-    arm.send_angles(arm_idle_angle, 50)
-    arm.set_fresh_mode(0)
-    time.sleep(1)
-    arm.set_tool_reference(tool_frame)
-    time.sleep(1)
-    arm.set_end_type(1)
-    time.sleep(1)
-    open_gripper(arm)
-    time.sleep(3)
-    release_gripper(arm)
-    time.sleep(0.1)
+    # arm.send_angles(arm_idle_angle, 50)
+    # arm.set_fresh_mode(0)
+    # time.sleep(1)
+    # arm.set_tool_reference(tool_frame)
+    # time.sleep(1)
+    # arm.set_end_type(1)
+    # time.sleep(1)
+    # open_gripper(arm)
+    # time.sleep(3)
+    # release_gripper(arm)
+    # time.sleep(0.1)
 
     while True:
         cam.update_frame()
@@ -111,6 +111,8 @@ def driver(detector, offset_3d=(0, 0, 0)):
             depth, (x, y), angle = min(depth_pos_pack)
             angle = (angle / np.pi) * 180
             angle = angle - 180 if angle > 180 else angle
+            if np.isnan(depth):
+                continue
             x, y = int(x), int(y)
             z = int(floor_depth - depth)
             angle = 0
@@ -127,7 +129,7 @@ def driver(detector, offset_3d=(0, 0, 0)):
                 color_id = 2
             elif detected_name == "yellow" or detected_name == "Circle":
                 color_id = 3
-            arm_move(color_id, x, y, z, angle, offset_3d)
+            # arm_move(color_id, x, y, z, angle, offset_3d)
 
 
 def arm_move(color_id, x, y, z, angle, offset_3d=(0, 0, 0)):

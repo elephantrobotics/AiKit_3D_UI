@@ -70,9 +70,9 @@ class ShapeDetector:
         res: List[ShapeDetector.ShapeDetectResult] = []
 
         for cnt in contours:
-            if cv2.contourArea(cnt) < 13000:
+            if cv2.contourArea(cnt) < 12000:
                 continue
-            print('erar:', cv2.contourArea(cnt))
+            # print('area:', cv2.contourArea(cnt))
             # PolyDP
             peri = cv2.arcLength(cnt, True)
             approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
@@ -84,7 +84,6 @@ class ShapeDetector:
 
             x = int(rect[0][0])
             y = int(rect[0][1])
-            print('xyxy:', objCor)
             if objCor == 3:
                 objectType = ObjectShapeType.triangle
                 res.append(self.ShapeDetectResult(objectType, cnt, (x, y)))
@@ -113,10 +112,9 @@ class ShapeDetector:
                 objectType = ObjectShapeType.circle
                 res.append(self.ShapeDetectResult(objectType, cnt, (x, y)))
             else:
-                pass
+                print('number:', objCor)
             for result in res:
                 self.detected_name = result.object_type.value
-                print("Detected shape:", self.detected_name)
         return res
 
     @classmethod

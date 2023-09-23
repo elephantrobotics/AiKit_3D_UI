@@ -20,7 +20,7 @@ from pymycobot.utils import get_port_list
 
 sys.path.append(os.getcwd())
 
-from ObbrecCamera import ObbrecCamera
+from RealSenseCamera import RealSenseCamera
 from Utils.mouse_callbacks import *
 from Utils.coord_calc import CoordCalc
 from Utils.crop_tools import crop_frame, crop_poly
@@ -42,7 +42,7 @@ arm = MechArm(plist[0])
 
 
 def driver(detector, offset_3d=(0, 0, 0)):
-    cam = ObbrecCamera()
+    cam = RealSenseCamera()
     cam.capture()
 
     # arm = MechArm(arm_serial_port)
@@ -147,6 +147,9 @@ def driver(detector, offset_3d=(0, 0, 0)):
             # 现在您可以通过深度值来查找相应的坐标点
             depth_to_match = min(depth_values)
             matched_coordinates = depth_coordinate_map.get(depth_to_match)
+            # 如果深度值为 'nan'，则过滤掉当前帧计算
+            if np.isnan(depth_to_match):
+                continue
             x, y, z = 0, 0, 0
             if matched_coordinates:
                 x, y = matched_coordinates

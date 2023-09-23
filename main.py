@@ -22,8 +22,6 @@ from PyQt6.QtGui import QPixmap, QRegularExpressionValidator, QImage
 from PyQt6.QtWidgets import QMainWindow, QWidget, QApplication, QMessageBox
 from pymycobot import MechArm
 
-from Utils.coord_calc import CoordCalc
-
 sys.path.append(os.getcwd())
 
 from resources.ui.AiKit_3D import Ui_AiKit_UI as AiKit_window
@@ -33,7 +31,8 @@ from Utils.arm_controls import *
 from detect.shape_detect import ShapeDetector
 from detect.color_detect import ColorDetector
 from detect.yolov8_detect import YOLODetector
-from ObbrecCamera import ObbrecCamera
+from RealSenseCamera import RealSenseCamera
+from Utils.coord_calc import CoordCalc
 from Utils.crop_tools import crop_frame, crop_poly
 
 
@@ -781,6 +780,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 else:
                     crawl_move = threading.Thread(target=self.robot_pick_move)
                     crawl_move.start()
+
         except Exception as e:
             e = traceback.format_exc()
             self.logger.error(str(e))
@@ -902,15 +902,15 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         print('Start Color or Shape......')
         self.algorithm_mode = self.comboBox_function.currentText()
         if not self.is_open_camera:
-            self.open_camera = ObbrecCamera()
+            self.open_camera = RealSenseCamera()
             self.open_camera.capture()
             self.is_open_camera = True
             while self.is_thread_running:
+                QApplication.processEvents()
                 self.open_camera.update_frame()
                 color_frame = self.open_camera.color_frame()
                 depth_frame = self.open_camera.depth_frame()
                 if color_frame is None or depth_frame is None:
-                    time.sleep(0.1)
                     continue
                 color_frame = crop_frame(color_frame, crop_size, crop_offset)
                 depth_frame = crop_frame(depth_frame, crop_size, crop_offset)
@@ -1014,10 +1014,11 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         """
         self.algorithm_mode = self.comboBox_function.currentText()
         if not self.is_open_camera:
-            self.open_camera = ObbrecCamera()
+            self.open_camera = RealSenseCamera()
             self.open_camera.capture()
             self.is_open_camera = True
             while self.is_thread_running:
+                QApplication.processEvents()
                 self.open_camera.update_frame()
                 color_frame = self.open_camera.color_frame()
                 depth_frame = self.open_camera.depth_frame()
@@ -1118,7 +1119,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                                 depth_coordinate_map[depth] = coordinates
                         # 现在您可以通过深度值来查找相应的坐标点
                         depth_to_match = min(depth_values)
-                        # self.logger.info(str(depth_values))
                         matched_coordinates = depth_coordinate_map.get(depth_to_match)
                         if np.isnan(depth_to_match):
                             self.logger.error('相机无法正确获取深度信息:{}'.format(depth_to_match))
@@ -1126,7 +1126,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             # depth_to_match = 320
                         else:
                             x, y, z = 0, 0, 0
-
                             if matched_coordinates:
                                 x, y = matched_coordinates
                                 x, y = int(x), int(y)
@@ -1291,6 +1290,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
 
         """
         try:
+            self.place_btn.setEnabled(True)
+            self.btn_color(self.place_btn, 'blue')
             self.offset_x = int(self.xoffset_edit.text())
             self.offset_y = int(self.yoffset_edit.text())
             self.offset_z = int(self.zoffset_edit.text())
@@ -1329,8 +1330,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(3)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 25, 1)
-                    time.sleep(3)
+                    self.mc.send_coords(coord, 40, 1)
+                    time.sleep(4)
                     self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
                 elif self.algorithm_mode in ['yolov8 pump', 'yolov8 吸泵']:
                     coord[0] += final_coord_offset[0] + off_x + 5
@@ -1346,8 +1347,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(3)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 25, 1)
-                    time.sleep(3)
+                    self.mc.send_coords(coord, 40, 1)
+                    time.sleep(3.5)
                     self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
                 elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪', 'Color recognition gripper']:
                     angle = 0
@@ -1374,7 +1375,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 else:
                     open_gripper(self.mc)
                     time.sleep(3)
-                    self.mc.send_coords(coord, 25, 1)
+                    self.mc.send_coords(coord, 40, 1)
                     time.sleep(3)
                     close_gripper(self.mc)
                     time.sleep(3)
@@ -1382,8 +1383,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(2.5)
                 self.is_crawl = False
                 self.btn_color(self.crawl_btn, 'blue')
-                self.place_btn.setEnabled(True)
-                self.btn_color(self.place_btn, 'blue')
             else:
                 self.logger.error('请先开启识别程序....')
         except Exception as e:
@@ -1493,7 +1492,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         """
         try:
             self.algorithm_mode = self.comboBox_function.currentText()
-            if self.is_place:
+            if self.is_place and self.mc:
                 print('start place')
                 if self.radioButton_A.isChecked():
                     pos_id = 2
@@ -1519,7 +1518,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 self.is_place = False
                 self.place_btn.setEnabled(False)
                 self.btn_color(self.place_btn, 'gray')
-                time.sleep(1.5)
+                time.sleep(1)
                 self.is_pick = True
             else:
                 self.logger.error('放置按钮无响应，请重试！！！')
