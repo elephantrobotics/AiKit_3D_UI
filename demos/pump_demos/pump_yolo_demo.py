@@ -8,4 +8,4 @@ from detect.yolov8_detect import YOLODetector
 from demos.pump_demos.pump_yolo_driver import driver
 
 if __name__ == "__main__":
-    driver(YOLODetector(), (10, 0, 15))
+    driver(YOLODetector(), (5, 0, 10))

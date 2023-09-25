@@ -7,4 +7,4 @@ from detect.shape_detect import ShapeDetector
 from demos.pump_demos.pump_demo_driver import driver
 
 if __name__ == "__main__":
-    driver(ShapeDetector(), (0, 0, -10))
+    driver(ShapeDetector(), (10, 0, -5))

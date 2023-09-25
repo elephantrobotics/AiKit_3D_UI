@@ -7,7 +7,7 @@ from pymycobot.utils import get_port_list
 
 sys.path.append(os.getcwd())
 
-from ObbrecCamera import ObbrecCamera
+from RealSenseCamera import RealSenseCamera
 from Utils.mouse_callbacks import *
 from Utils.coord_calc import CoordCalc
 from Utils.crop_tools import crop_frame, crop_poly
@@ -27,7 +27,7 @@ arm = MechArm(plist[0])
 
 
 def driver(detector, offset_3d=(0, 0, 0)):
-    cam = ObbrecCamera()
+    cam = RealSenseCamera()
     cam.capture()
     # arm = MechArm(arm_serial_port)
     arm.send_angles(arm_idle_angle, 50)

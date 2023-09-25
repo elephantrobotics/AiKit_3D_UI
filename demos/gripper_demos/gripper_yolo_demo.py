@@ -8,4 +8,4 @@ from demos.gripper_demos.gripper_yolo_driver import driver
 
 
 if __name__ == "__main__":
-    driver(YOLODetector(), (-10, -10, 10))
+    driver(YOLODetector(), (15, -10, 5))

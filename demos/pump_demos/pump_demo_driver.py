@@ -104,6 +104,7 @@ def driver(detector, offset_3d=(0, 0, 0)):
             # transform angle from camera frame to arm frame
             print(f"Raw x,y,z, depth : {x} {y} {z} {depth}")
             detected_name = detector.detected_name
+            print(detected_name)
             color_id = 0
             # 根据识别到的颜色设置投放点
             if detected_name == "redA" or detected_name == "redB" or detected_name == "Triangle":

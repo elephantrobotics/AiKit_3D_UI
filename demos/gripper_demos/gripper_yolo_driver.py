@@ -195,7 +195,7 @@ def arm_move(x, y, z, angle, offset_3d=(0, 0, 0)):
     # add angle
     # rz = 90 + (90 - angle)
     rz = 90 + (90 - 10)
-    coord.extend([175, 0, rz])
+    coord.extend([177, 0, rz])
 
     # send angle
     # move x-y first

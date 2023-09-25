@@ -22,17 +22,18 @@ final_frame_size = crop_size * zoom_factor
 
 # 裁剪偏移，裁剪出Camera Zone
 # crop_offset = (-25, -40)
-crop_offset = (-60, 30)
+crop_offset = (65, -32)
 # 目标平面的实际大小
-# target_plan_real_world_size = 105
-target_plan_real_world_size = 108
+target_plan_real_world_size = 105
+# target_plan_real_world_size = 108
 
 # 平面像素大小与实际大小（毫米）的比例
 plane_frame_size_ratio = target_plan_real_world_size / final_frame_size
 
 # Calc的坐标平面中心参数
-target_base_pos3d_pump = (135, 0, -25)
-target_base_pos3d_gripper = (160, 0, -33)
+# target_base_pos3d_pump = (135, 0, -25)
+# target_base_pos3d_gripper = (160, 0, -33)
+target_base_pos3d = (135, 0, -25)
 
 # 最终坐标偏移量
 final_coord_offset = [0, 0, 0]

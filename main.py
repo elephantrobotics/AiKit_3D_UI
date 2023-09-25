@@ -989,7 +989,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             z = int(floor_depth - depth)
                             # transform angle from camera frame to arm frame
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
-                            print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
+                            # print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
             self.logger.info('Recognition has stopped....')
 
         else:
@@ -1023,7 +1023,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 color_frame = self.open_camera.color_frame()
                 depth_frame = self.open_camera.depth_frame()
                 if color_frame is None or depth_frame is None:
-                    time.sleep(0.1)
                     continue
                 color_frame = crop_frame(color_frame, crop_size, crop_offset)
                 depth_frame = crop_frame(depth_frame, crop_size, crop_offset)
@@ -1134,7 +1133,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             else:
                                 print(f"未找到深度值 {depth_to_match} 对应的坐标点")
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
-                            print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
+                            # print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
             self.logger.info('already stop....')
 
         else:
@@ -1297,10 +1296,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             self.offset_z = int(self.zoffset_edit.text())
             self.algorithm_mode = self.comboBox_function.currentText()
             if self.algorithm_mode in self.algorithm_pump:
-                target_base_pos3d = target_base_pos3d_pump
                 arm_pick_hover_angle = arm_pick_hover_angle_pump
             else:
-                target_base_pos3d = target_base_pos3d_gripper
                 arm_pick_hover_angle = arm_pick_hover_angle_gripper
             coords_transformer = CoordCalc(
                 target_base_pos3d,
@@ -1402,10 +1399,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             self.offset_z = int(self.zoffset_edit.text())
             self.algorithm_mode = self.comboBox_function.currentText()
             if self.algorithm_mode in self.algorithm_pump:
-                target_base_pos3d = target_base_pos3d_pump
                 arm_pick_hover_angle = arm_pick_hover_angle_pump
             else:
-                target_base_pos3d = target_base_pos3d_gripper
                 arm_pick_hover_angle = arm_pick_hover_angle_gripper
             coords_transformer = CoordCalc(
                 target_base_pos3d,
@@ -1435,15 +1430,12 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 time.sleep(3)
                 # 运行至物体表面
                 self.logger.info('Target move: {}'.format(coord))
-                self.mc.send_coords(coord, 25, 1)
+                self.mc.send_coords(coord, 40, 1)
                 time.sleep(3)
-                if self.mc.is_in_position(coord, 1):
-                    pass
-
                 self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
                 pump_on(self.mc)
                 time.sleep(1.5)
-                self.mc.send_coord(3, 90, 25)
+                self.mc.send_coord(3, 90, 40)
                 time.sleep(3.5)
                 self.mc.send_angles(box_position[random_number], 50)
                 time.sleep(3)
@@ -1493,7 +1485,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         try:
             self.algorithm_mode = self.comboBox_function.currentText()
             if self.is_place and self.mc:
-                print('start place')
                 if self.radioButton_A.isChecked():
                     pos_id = 2
                 elif self.radioButton_B.isChecked():

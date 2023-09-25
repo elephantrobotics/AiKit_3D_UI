@@ -15,8 +15,9 @@ class RealSenseCamera:
         self.pipeline = rs.pipeline()
         self.config = rs.config()
         self.config.enable_stream(rs.stream.color, 1920, 1080, rs.format.bgr8, 30)
-        self.flip_h = True
-        self.flip_v = True
+        # 相机镜像是否相反
+        self.flip_h = False
+        self.flip_v = False
 
         # Get device product line for setting a supporting resolution
         pipeline_wrapper = rs.pipeline_wrapper(self.pipeline)
@@ -88,7 +89,7 @@ if __name__ == "__main__":
     sys.path.append(os.getcwd())
     from Utils.mouse_callbacks import *
     from Utils.crop_tools import crop_frame
-    from configs.config_gripper import *
+    from configs.config_pump import *
 
     cam = RealSenseCamera()
     cam.capture()
