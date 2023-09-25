@@ -2,6 +2,7 @@ import os
 import sys
 import threading
 import time
+import traceback
 from pathlib import Path
 
 sys.path.append(str(Path("./libs").resolve()))
@@ -74,25 +75,45 @@ from configs.all_config import *
 
 mc = MechArm('COM27', 115200)
 
+is_coords = True
+
 
 def robot_pick_move():
-    mc.send_angles([0, 30, -27, 0, 90, 90], 50)
-    time.sleep(3)
+    for i in range(100):
+        print('开始第{}次'.format(i + 1))
+        mc.send_angles([0, 30, -27, 0, 90, 90], 50)
+        time.sleep(3)
 
-    mc.send_coords([166.8, 8.8, 20, -177, 0, 90], 25, 1)
-    time.sleep(3)
+        mc.send_coords([166.8, 8.8, 20, -177, 0, 90], 40, 1)
+        time.sleep(3)
 
-    pump_on(mc)
-    time.sleep(1.5)
-    mc.send_coord(3, 90, 25)
-    time.sleep(3)
+        pump_on(mc)
+        time.sleep(1.5)
+        mc.send_coord(3, 90, 40)
+        time.sleep(3)
 
-    mc.send_angles(box_position[3], 50)
-    time.sleep(3)
-    pump_off(mc)
-    time.sleep(1.5)
-    mc.send_angles([-90, 0, 0, 0, 90, 0], 50)
-    time.sleep(4)
+        mc.send_angles(box_position[3], 50)
+        time.sleep(3)
+        pump_off(mc)
+        time.sleep(1.5)
+        mc.send_angles([-90, 0, 0, 0, 90, 0], 50)
+        time.sleep(4)
+
+
+def get_data_coords():
+    while is_coords:
+        try:
+            coord = mc.get_coords()
+        except Exception as e:
+            e = traceback.format_exc()
+            coord = []
+            pass
+        if coord and len(coord) == 6:
+            coord = 'X: {} Y: {} Z: {} Rx: {} Ry: {} Rz: {}'.format(coord[0], coord[1], coord[2], coord[3],
+                                                                    coord[4],
+                                                                    coord[5])
+            print('coord:{}'.format(coord))
+        time.sleep(0.2)
 
 
 def crawl_move_thread():
@@ -107,8 +128,11 @@ def crawl_move_thread():
         crawl_move_lock.release()
 
 
-# thread = threading.Thread(target=crawl_move_thread)
-# thread.start()
+thread = threading.Thread(target=robot_pick_move)
+thread.start()
+
+coord = threading.Thread(target=get_data_coords)
+coord.start()
 
 # mc.send_angles([0, 30, -27, 0, 90, 90], 50)
 # time.sleep(3)
@@ -119,8 +143,9 @@ def crawl_move_thread():
 # else:
 #     print(mc.get_angles())
 #     print('未到达')
-
-print(mc.get_angles(), mc.get_coords())
-print(mc.get_error_information())
+#
+# print(mc.get_angles())
+# time.sleep(0.1)
+# print(mc.get_error_information())
 
 # mc.send_coords([135, 0, -25, 179.9, -9.22, 179.99], 40, 1)
