@@ -779,6 +779,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     self.pallet = threading.Thread(target=self.start_pallet_crawl)
                     self.pallet.start()
                 else:
+                    self.place_btn.setEnabled(True)
+                    self.btn_color(self.place_btn, 'blue')
                     crawl_move = threading.Thread(target=self.robot_pick_move)
                     crawl_move.start()
         except Exception as e:
@@ -910,7 +912,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 color_frame = self.open_camera.color_frame()
                 depth_frame = self.open_camera.depth_frame()
                 if color_frame is None or depth_frame is None:
-                    time.sleep(0.1)
+                    # time.sleep(0.1)
                     continue
                 color_frame = crop_frame(color_frame, crop_size, crop_offset)
                 depth_frame = crop_frame(depth_frame, crop_size, crop_offset)
@@ -1022,7 +1024,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 color_frame = self.open_camera.color_frame()
                 depth_frame = self.open_camera.depth_frame()
                 if color_frame is None or depth_frame is None:
-                    time.sleep(0.1)
+                    # time.sleep(0.1)
                     continue
                 color_frame = crop_frame(color_frame, crop_size, crop_offset)
                 depth_frame = crop_frame(depth_frame, crop_size, crop_offset)
@@ -1329,9 +1331,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(3)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 25, 1)
+                    self.mc.send_coords(coord, 40, 1)
                     time.sleep(3)
-                    self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
                 elif self.algorithm_mode in ['yolov8 pump', 'yolov8 吸泵']:
                     coord[0] += final_coord_offset[0] + off_x + 5
                     coord[1] += final_coord_offset[1] + off_y
@@ -1346,9 +1347,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(3)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 25, 1)
+                    self.mc.send_coords(coord, 40, 1)
                     time.sleep(3)
-                    self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
                 elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪', 'Color recognition gripper']:
                     angle = 0
                     coord[0] += final_coord_offset[0] + off_x
@@ -1364,7 +1364,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     # self.mc.send_coords(coord_xy, 50)
                     position_move(self.mc, *coord_xy)
                     time.sleep(3)
-                    self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
 
                 if self.algorithm_mode in self.algorithm_pump:
                     pump_on(self.mc)
@@ -1374,7 +1373,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 else:
                     open_gripper(self.mc)
                     time.sleep(3)
-                    self.mc.send_coords(coord, 25, 1)
+                    self.mc.send_coords(coord, 40, 1)
                     time.sleep(3)
                     close_gripper(self.mc)
                     time.sleep(3)
@@ -1382,8 +1381,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(2.5)
                 self.is_crawl = False
                 self.btn_color(self.crawl_btn, 'blue')
-                self.place_btn.setEnabled(True)
-                self.btn_color(self.place_btn, 'blue')
             else:
                 self.logger.error('请先开启识别程序....')
         except Exception as e:
@@ -1436,12 +1433,11 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 time.sleep(3)
                 # 运行至物体表面
                 self.logger.info('Target move: {}'.format(coord))
-                self.mc.send_coords(coord, 25, 1)
+                self.mc.send_coords(coord, 40, 1)
                 time.sleep(3)
                 if self.mc.is_in_position(coord, 1):
                     pass
 
-                self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
                 pump_on(self.mc)
                 time.sleep(1.5)
                 self.mc.send_coord(3, 90, 25)
