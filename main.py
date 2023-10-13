@@ -20,7 +20,7 @@ import serial.tools.list_ports
 from PyQt6.QtCore import Qt, pyqtSlot, QDateTime, QRegularExpression, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap, QRegularExpressionValidator, QImage
 from PyQt6.QtWidgets import QMainWindow, QWidget, QApplication, QMessageBox
-from pymycobot import MechArm
+from pymycobot import MechArm,MyCobot
 
 sys.path.append(os.getcwd())
 
@@ -62,7 +62,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         self.image_coord_btn.clicked.connect(self.get_img_coords_btn)
         self.open_camera_btn.clicked.connect(self.camera_checked)
 
-        self.M5 = ['mechArm 270 for M5']
+        self.M5 = ['myCobot 280 for M5']
         self.mc = None
         self.port_list = []
         self.logger = MyLogging().logger
@@ -104,6 +104,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                                '颜色识别 吸泵', '形状识别 吸泵', 'yolov8 吸泵', '拆码垛 吸泵']
         self.algorithm_gripper = ['Color recognition gripper', 'yolov8 gripper', '颜色识别 夹爪', 'yolov8 夹爪']
         self._init_main_window()
+
+        self.add_support_robot_types()
         self.choose_function()
         self.get_serial_port_list()
         self.baud_choose()
@@ -377,6 +379,16 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             e = traceback.format_exc()
             self.logger.error(str(e))
 
+    def add_support_robot_types(self):
+        """
+        增加后续可支持的机型
+        """
+        self.comboBox_device.clear()
+        self.comboBox_device.addItem("myCobot 280 for M5")
+
+
+
+
     def get_serial_port_list(self):
         """
         获取当前串口号并映射到串口下拉框
@@ -449,19 +461,27 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         try:
             self.prompts_lab.clear()
             device = self.comboBox_device.currentText()
-            if device == 'mechArm 270 for M5':
-                init_robotics = threading.Thread(target=self.init_270_M5)
+            if device in self.M5:
+                init_robotics = threading.Thread(target=self.init_Robots_M5,args=(device,))
                 init_robotics.start()
         except Exception as e:
             e = traceback.format_exc()
             self.logger.error(str(e))
 
-    def init_270_M5(self):
+    def init_Robots_M5(self,device):
         """
         连接机械臂，并对机械臂进行一些初始化
         Returns:
 
         """
+        print("Robots:",device)
+
+        def init_robots(*args):
+            robot=args[0]
+            # if robot==self.M5[0]: self.mc=MechArm(port,baud)
+            if robot=="myCobot 280 for M5": self.mc=MyCobot(port,baud)
+
+
         try:
             self.comboBox_device.setEnabled(False)
             self.comboBox_baud.setEnabled(False)
@@ -469,7 +489,9 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             port = self.comboBox_port.currentText()
             baud = self.comboBox_baud.currentText()
             self.algorithm_mode = self.comboBox_function.currentText()
-            self.mc = MechArm(port, baud)
+            # self.mc = MechArm(port, baud)
+            # self.mc=MyCobot(port,baud)
+            init_robots(device)
             time.sleep(0.1)
             self.logger.info('connection succeeded !')
             self.is_connected = True
@@ -550,7 +572,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
 
     def robot_go_home(self):
         """
-        控制机械臂回到初始点 [-90, 0, 0, 0, 90, 0]
+        控制机械臂回到初始点 [-90, 0, 0, 0, 90, 0] --MechArm 270
+        [-40,0,-80,0,0,0] --MyCobot 280
         Returns: None
 
         """
@@ -561,6 +584,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             go_home_mes = 'The robot moves to the initial point'
             if device in self.M5:
                 self.logger.info(go_home_mes)
+
                 self.mc.send_angles(arm_idle_angle, 50)
                 time.sleep(3)
             if self.algorithm_mode in self.algorithm_pump:
@@ -766,6 +790,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         """
         try:
             self.algorithm_mode = self.comboBox_function.currentText()
+
             if self.is_crawl:
                 self.is_crawl = False
                 self.btn_color(self.crawl_btn, 'blue')

@@ -1,5 +1,5 @@
 import time
-from pymycobot import MechArm
+from pymycobot import MechArm,MyCobot
 
 
 # 开启吸泵
@@ -21,7 +21,7 @@ def pump_off(arm):
     time.sleep(0.05)
 
 
-def position_move(arm: MechArm, x, y, z):
+def position_move(arm: MyCobot, x, y, z):
     curr_rotation = arm.get_coords()[-3:]
     while len(curr_rotation) == 0:
         curr_rotation = arm.get_coords()[-3:]
