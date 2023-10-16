@@ -29,7 +29,7 @@ from resources.log.logfile import MyLogging
 from configs.all_config import *
 from Utils.arm_controls import *
 from detect.shape_detect import ShapeDetector
-from detect.color_detect import ColorDetector
+from detect.color_detect import ColorDetector 
 from detect.yolov8_detect import YOLODetector
 from RealSenseCamera import RealSenseCamera
 from Utils.coord_calc import CoordCalc
@@ -1014,7 +1014,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             z = int(floor_depth - depth)
                             # transform angle from camera frame to arm frame
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
-                            # print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
+                            # print(f"Raw pos_x,pos_y,pos_z for pump : {self.pos_x} {self.pos_y} {self.pos_z}")
             self.logger.info('Recognition has stopped....')
 
         else:
@@ -1154,11 +1154,11 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                                 x, y = matched_coordinates
                                 x, y = int(x), int(y)
                                 z = int(floor_depth - depth_to_match)
-                                print(f"深度值 {depth_to_match} 对应的坐标点是 {matched_coordinates}")
+                                # print(f"深度值 {depth_to_match} 对应的坐标点是 {matched_coordinates}")
                             else:
                                 print(f"未找到深度值 {depth_to_match} 对应的坐标点")
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
-                            # print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
+                            print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
             self.logger.info('already stop....')
 
         else:
@@ -1331,7 +1331,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             )
             if self.is_crawl and self.is_discern and self.pos_x != 0 and self.pos_y != 0 and self.pos_z != 0:
                 self.is_pick = False
-                self.mc.send_angles(arm_pick_hover_angle, 50)
+                self.mc.send_angles(arm_pick_hover_angle, 50) #hover postion
                 time.sleep(3)
                 # get target coord
                 coord = coords_transformer.frame2real(self.pos_x, self.pos_y)
@@ -1343,61 +1343,70 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     coord[0] += final_coord_offset[0] + off_x
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + off_z + self.pos_z
-                    coord.extend([177, 0, 90])
+                    coord.extend([-177, 0, -75])
                     target_xy_pos3d = coord.copy()[:3]
                     target_xy_pos3d[2] = 50
                     # 运动至物体上方
                     self.logger.info('X-Y move: {}'.format(target_xy_pos3d))
                     position_move(self.mc, *target_xy_pos3d)
-                    time.sleep(3)
+                    time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 40, 1)
+                    self.mc.send_coords(coord, 90, 0)
                     time.sleep(4)
                     self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
                 elif self.algorithm_mode in ['yolov8 pump', 'yolov8 吸泵']:
                     coord[0] += final_coord_offset[0] + off_x + 5
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + self.pos_z - 20 + off_z
-                    coord.extend([-177, 0, 90])
+                    coord.extend([-177, 0, -75])
                     coord_xy = coord.copy()[:3]
                     coord_xy[2] = 50
                     # self.mc.send_coords(coord_xy, 50)
                     # 运行至物体上方
                     self.logger.info('X-Y move: {}'.format(coord_xy))
                     position_move(self.mc, *coord_xy)
-                    time.sleep(3)
+                    time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 40, 1)
-                    time.sleep(3.5)
+                    self.mc.send_coords(coord, 90, 0)
+                    time.sleep(4)
                     self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
                 elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪', 'Color recognition gripper']:
                     angle = 0
                     coord[0] += final_coord_offset[0] + off_x
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + self.pos_z + off_z
+                    print(off_z,"off_z",self.pos_z,"coord",coord)
                     # rz = 90 + (90 - angle)
-                    rz = 90 + (90 - 10)
-                    coord.extend([177, 0, rz])
+                    # rz = 90 + (90 - 10)
+                    coord.extend([177,0,-75])
+                    # coord.extend([180, -5, 40])
+                    # print((coords in ))
                     coord_xy = coord.copy()[:3]
-                    coord_xy[2] = 50
+                    coord_xy[2] = 80
                     # 运行至物体上方
                     self.logger.info('X-Y move: {}'.format(coord_xy))
+                    print(coord_xy,"coors_xy")
                     # self.mc.send_coords(coord_xy, 50)
                     position_move(self.mc, *coord_xy)
-                    time.sleep(3)
+                    time.sleep(4)
                     self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
 
                 if self.algorithm_mode in self.algorithm_pump:
                     pump_on(self.mc)
-                    time.sleep(1.5)
-                    self.mc.send_coord(3, 90, 50)
+                    # time.sleep(1.5)
+                    time.sleep(4)
+                    self.mc.send_coord(3, 90, 100)
                     time.sleep(2.5)
+
                 else:
+                    print("open gripper for")
                     open_gripper(self.mc)
                     time.sleep(3)
-                    self.mc.send_coords(coord, 40, 1)
+                    print(coord,"coords for open gripper")
+                    # self.mc.send_coords(coord, 40, 1)
+                    self.mc.send_coord(3,20,50)
                     time.sleep(3)
                     close_gripper(self.mc)
                     time.sleep(3)
@@ -1445,7 +1454,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 coord[0] += final_coord_offset[0] + off_x + 5
                 coord[1] += final_coord_offset[1] + off_y
                 coord[2] += final_coord_offset[2] + self.pos_z - 20 + off_z
-                coord.extend([-177, 0, 90])
+                coord.extend([177, 0, -75])
                 coord_xy = coord.copy()[:3]
                 coord_xy[2] = 50
                 # 运动至物体上方
@@ -1455,9 +1464,10 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 time.sleep(3)
                 # 运行至物体表面
                 self.logger.info('Target move: {}'.format(coord))
-                self.mc.send_coords(coord, 40, 1)
+                self.mc.send_coords(coord, 40, 0)
                 time.sleep(3)
                 self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
+                print("pump xxxxxxxxxxx")
                 pump_on(self.mc)
                 time.sleep(1.5)
                 self.mc.send_coord(3, 90, 40)
