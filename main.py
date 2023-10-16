@@ -1331,7 +1331,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(3)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 40, 1)
+                    self.mc.send_coords(coord, 90, 1)
                     time.sleep(3)
                 elif self.algorithm_mode in ['yolov8 pump', 'yolov8 吸泵']:
                     coord[0] += final_coord_offset[0] + off_x + 5
@@ -1344,21 +1344,21 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     # 运行至物体上方
                     self.logger.info('X-Y move: {}'.format(coord_xy))
                     position_move(self.mc, *coord_xy)
-                    time.sleep(3)
+                    time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 40, 1)
-                    time.sleep(3)
+                    self.mc.send_coords(coord, 90, 1)
+                    time.sleep(4)
                 elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪', 'Color recognition gripper']:
                     angle = 0
                     coord[0] += final_coord_offset[0] + off_x
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + self.pos_z + off_z
                     # rz = 90 + (90 - angle)
-                    rz = 90 + (90 - 10)
-                    coord.extend([177, 0, rz])
+                    # rz = 90 + (90 - 10)
+                    coord.extend([177, 0, 40])
                     coord_xy = coord.copy()[:3]
-                    coord_xy[2] = 50
+                    coord_xy[2] = 70
                     # 运行至物体上方
                     self.logger.info('X-Y move: {}'.format(coord_xy))
                     # self.mc.send_coords(coord_xy, 50)
@@ -1367,13 +1367,14 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
 
                 if self.algorithm_mode in self.algorithm_pump:
                     pump_on(self.mc)
-                    time.sleep(1.5)
-                    self.mc.send_coord(3, 90, 50)
+                    time.sleep(4)
+                    self.mc.send_coord(3, 90, 100)
                     time.sleep(2.5)
                 else:
                     open_gripper(self.mc)
                     time.sleep(3)
-                    self.mc.send_coords(coord, 40, 1)
+                    # self.mc.send_coords(coord, 40, 1)
+                    self.mc.send_coord(3,20,50)
                     time.sleep(3)
                     close_gripper(self.mc)
                     time.sleep(3)

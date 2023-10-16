@@ -1,5 +1,5 @@
 import time
-from pymycobot import MechArm
+from pymycobot import MyCobot
 
 
 # 开启吸泵
@@ -21,7 +21,7 @@ def pump_off(arm):
     time.sleep(0.05)
 
 
-def position_move(arm: MechArm, x, y, z):
+def position_move(arm: MyCobot, x, y, z):
     curr_rotation = arm.get_coords()[-3:]
     while len(curr_rotation) == 0:
         curr_rotation = arm.get_coords()[-3:]
@@ -32,16 +32,16 @@ def position_move(arm: MechArm, x, y, z):
     target_coord = [x, y, z]
     target_coord.extend(curr_rotation)
     print(f"Move to coords : {target_coord}")
-    arm.send_coords(target_coord, 50)
+    arm.send_coords(target_coord, 100)
 
 
-def release_gripper(arm: MechArm):
+def release_gripper(arm: MyCobot):
     arm.release_servo(7)
 
 
-def open_gripper(arm: MechArm):
+def open_gripper(arm: MyCobot):
     arm.set_gripper_value(95, 100)
 
 
-def close_gripper(arm: MechArm):
+def close_gripper(arm: MyCobot):
     arm.set_gripper_value(5, 100)
