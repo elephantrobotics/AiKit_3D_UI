@@ -20,7 +20,7 @@ import serial.tools.list_ports
 from PyQt6.QtCore import Qt, pyqtSlot, QDateTime, QRegularExpression, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap, QRegularExpressionValidator, QImage
 from PyQt6.QtWidgets import QMainWindow, QWidget, QApplication, QMessageBox
-from pymycobot import MechArm
+from pymycobot import MechArm,MyCobot
 
 from Utils.coord_calc import CoordCalc
 
@@ -62,8 +62,9 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         self.current_coord_btn.clicked.connect(self.get_current_coords_btn)
         self.image_coord_btn.clicked.connect(self.get_img_coords_btn)
         self.open_camera_btn.clicked.connect(self.camera_checked)
-
-        self.M5 = ['mechArm 270 for M5']
+        self.add_support_robot_types()
+        # self.M5 = ['mechArm 270 for M5']
+        self.M5=['myCobot 280 for M5']
         self.mc = None
         self.port_list = []
         self.logger = MyLogging().logger
@@ -410,6 +411,15 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             e = traceback.format_exc()
             self.logger.error(str(e))
 
+
+    def add_support_robot_types(self):
+        """
+        增加后续可支持的机型
+        """
+        self.comboBox_device.clear()
+        self.comboBox_device.addItem("myCobot 280 for M5")
+
+
     def baud_choose(self):
         """
         根据机器设备选择正确的串口号
@@ -450,7 +460,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         try:
             self.prompts_lab.clear()
             device = self.comboBox_device.currentText()
-            if device == 'mechArm 270 for M5':
+            if device == 'myCobot 280 for M5':
                 init_robotics = threading.Thread(target=self.init_270_M5)
                 init_robotics.start()
         except Exception as e:
@@ -470,7 +480,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             port = self.comboBox_port.currentText()
             baud = self.comboBox_baud.currentText()
             self.algorithm_mode = self.comboBox_function.currentText()
-            self.mc = MechArm(port, baud)
+            self.mc = MyCobot(port, baud)
             time.sleep(0.1)
             self.logger.info('connection succeeded !')
             self.is_connected = True
@@ -911,6 +921,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 self.open_camera.update_frame()
                 color_frame = self.open_camera.color_frame()
                 depth_frame = self.open_camera.depth_frame()
+                
                 if color_frame is None or depth_frame is None:
                     # time.sleep(0.1)
                     continue
@@ -1322,24 +1333,30 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     coord[0] += final_coord_offset[0] + off_x
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + off_z + self.pos_z
-                    coord.extend([177, 0, 90])
+
+                    coord.extend([-177, 0, -75])
+                    
                     target_xy_pos3d = coord.copy()[:3]
                     target_xy_pos3d[2] = 50
                     # 运动至物体上方
                     self.logger.info('X-Y move: {}'.format(target_xy_pos3d))
+            
                     position_move(self.mc, *target_xy_pos3d)
-                    time.sleep(3)
+                    time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 90, 1)
-                    time.sleep(3)
+                    self.mc.send_coords(coord, 90, 0)
+                    time.sleep(4)
                 elif self.algorithm_mode in ['yolov8 pump', 'yolov8 吸泵']:
                     coord[0] += final_coord_offset[0] + off_x + 5
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + self.pos_z - 20 + off_z
-                    coord.extend([-177, 0, 90])
+          
+                    coord.extend([-177, 0, -75])
                     coord_xy = coord.copy()[:3]
                     coord_xy[2] = 50
+
+
                     # self.mc.send_coords(coord_xy, 50)
                     # 运行至物体上方
                     self.logger.info('X-Y move: {}'.format(coord_xy))
@@ -1347,7 +1364,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 90, 1)
+                    self.mc.send_coords(coord, 90, 0)
                     time.sleep(4)
                 elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪', 'Color recognition gripper']:
                     angle = 0
@@ -1370,6 +1387,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(4)
                     self.mc.send_coord(3, 90, 100)
                     time.sleep(2.5)
+
                 else:
                     open_gripper(self.mc)
                     time.sleep(3)
@@ -1424,25 +1442,30 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 coord[0] += final_coord_offset[0] + off_x + 5
                 coord[1] += final_coord_offset[1] + off_y
                 coord[2] += final_coord_offset[2] + self.pos_z - 20 + off_z
-                coord.extend([-177, 0, 90])
+
+                coord.extend([177, 0, -75])
                 coord_xy = coord.copy()[:3]
                 coord_xy[2] = 50
                 # 运动至物体上方
                 self.logger.info('X-Y move: {}'.format(coord_xy))
                 # self.mc.send_coords(coord_xy, 50)
-                position_move(self.mc, *coord_xy)
-                time.sleep(3)
+                # position_move(self.mc, *coord_xy)
+                time.sleep(1)
                 # 运行至物体表面
-                self.logger.info('Target move: {}'.format(coord))
-                self.mc.send_coords(coord, 40, 1)
-                time.sleep(3)
+
+                self.logger.info('Target move to pump: {}'.format(coord))
+                self.mc.send_coords(coord, 80, 0)
+                time.sleep(4)
+
                 if self.mc.is_in_position(coord, 1):
                     pass
 
                 pump_on(self.mc)
+
                 time.sleep(1.5)
                 self.mc.send_coord(3, 90, 25)
-                time.sleep(3.5)
+                time.sleep(5)
+
                 self.mc.send_angles(box_position[random_number], 50)
                 time.sleep(3)
                 pump_off(self.mc)

@@ -11,9 +11,9 @@ arm_serial_port = "COM27"
 # arm_pick_hover_angle_pump = [0, 30, -27, 0, 90, 90]
 # arm_pick_hover_angle_gripper = [0, 30, -27, 0, 90, 0]
 
-arm_idle_angle=[-40,0,-80,0,0,0] # 280
-arm_pick_hover_angle_pump=[15,15,-97,0,0,0] #280
-arm_pick_hover_angle_gripper = [15,15,-97,0,0,0] #280
+arm_idle_angle=[-40,0,-90,0,0,0] # 280
+arm_pick_hover_angle_pump=[15,0,-85,0,0,0] #280
+arm_pick_hover_angle_gripper = [15,0,-85,0,0,0] #280
 
 # 裁剪目标正方形的边长
 crop_size = 135
@@ -26,7 +26,7 @@ zoom_factor = 3
 final_frame_size = crop_size * zoom_factor
 
 # 裁剪偏移，裁剪出Camera Zone
-# crop_offset = (-25, -40)
+# crop_offset = (20, 3)
 crop_offset = (20, -12)
 # 目标平面的实际大小
 # target_plan_real_world_size = 105
@@ -56,11 +56,12 @@ box_position = [
     # [88.06, 15.46, 0.79, 0.61, 68.02, 0.35],  # Bin B
 
 
-    [-28.65,-7.11,-103.35,26.01,-1.4,-142.47],
-    [-14.76,-44.12,-51.06,20.56,0.87,-142.47],
-    
-    [66.44,-17.84,-79.98,12.91,4.3,-142.47],
-    [106.08,12.48,-104.76,5.88,1.23,-143.61]
+    [-27.86,3.86,-89.2,15.2,3.95,-25.31],
+    [-18.98,-50,-30.76,9.05,6.59,-22.58],
+
+
+    [62.13,2.9,-93.94,17.49,3.86,-6.85],
+    [107.66,22.58,-107.92,1.31,4.57,-26.27]
 ]
 
 

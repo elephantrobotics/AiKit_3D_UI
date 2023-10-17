@@ -1,5 +1,8 @@
 import time
 from pymycobot import MyCobot
+from resources.log.logfile import MyLogging
+
+
 
 
 # 开启吸泵
@@ -31,8 +34,9 @@ def position_move(arm: MyCobot, x, y, z):
     curr_rotation[1] = 0
     target_coord = [x, y, z]
     target_coord.extend(curr_rotation)
+    MyLogging().logger.info('Move to coords of surface: {}'.format(target_coord))
     print(f"Move to coords : {target_coord}")
-    arm.send_coords(target_coord, 100)
+    arm.send_coords(target_coord, 100,0)
 
 
 def release_gripper(arm: MyCobot):
