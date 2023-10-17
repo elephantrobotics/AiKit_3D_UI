@@ -469,7 +469,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             port = self.comboBox_port.currentText()
             baud = self.comboBox_baud.currentText()
             self.algorithm_mode = self.comboBox_function.currentText()
-            self.mc = MechArm(port, baud)
+            self.mc = MechArm(port, baud, thread_lock=True)
             time.sleep(0.1)
             self.logger.info('connection succeeded !')
             self.is_connected = True
