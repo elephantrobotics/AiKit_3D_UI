@@ -30,6 +30,7 @@ from configs.all_config import *
 from Utils.arm_controls import *
 from detect.shape_detect import ShapeDetector
 from detect.color_detect import ColorDetector 
+from detect.color_detect import ColorDetector 
 from detect.yolov8_detect import YOLODetector
 from RealSenseCamera import RealSenseCamera
 from Utils.coord_calc import CoordCalc
@@ -1377,6 +1378,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     coord[0] += final_coord_offset[0] + off_x
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + self.pos_z + off_z
+                    print(off_z,"off_z",self.pos_z,"coord",coord)
                     print(off_z,"off_z",self.pos_z,"coord",coord)
                     # rz = 90 + (90 - angle)
                     # rz = 90 + (90 - 10)
