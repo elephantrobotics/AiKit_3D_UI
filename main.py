@@ -96,9 +96,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         self.show_camera_lab_depth.hide()
         self.show_camera_lab_rgb.hide()
 
-        # 创建一个锁对象
-        self.crawl_move_lock = threading.Lock()
-
         self.is_thread_running = True
         self.algorithm_pump = ['Color recognition pump', 'Shape recognition pump', 'yolov8 pump', 'Depalletizing pump',
                                '颜色识别 吸泵', '形状识别 吸泵', 'yolov8 吸泵', '拆码垛 吸泵']
@@ -911,6 +908,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 color_frame = self.open_camera.color_frame()
                 depth_frame = self.open_camera.depth_frame()
                 if color_frame is None or depth_frame is None:
+                    time.sleep(0.01)
                     continue
                 color_frame = crop_frame(color_frame, crop_size, crop_offset)
                 depth_frame = crop_frame(depth_frame, crop_size, crop_offset)
@@ -983,15 +981,16 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                         depth, (x, y) = min(depth_pos_pack)
                         if np.isnan(depth):
                             self.logger.error('相机无法正确获取深度信息:{}'.format(depth))
+                            time.sleep(0.01)
                             continue
                         else:
                             x, y = int(x), int(y)
                             z = int(floor_depth - depth)
                             # transform angle from camera frame to arm frame
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
+                            time.sleep(0.01)
                             # print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
             self.logger.info('Recognition has stopped....')
-
         else:
             if self.is_open_camera:
                 try:
@@ -1023,6 +1022,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 color_frame = self.open_camera.color_frame()
                 depth_frame = self.open_camera.depth_frame()
                 if color_frame is None or depth_frame is None:
+                    time.sleep(0.01)
                     continue
                 color_frame = crop_frame(color_frame, crop_size, crop_offset)
                 depth_frame = crop_frame(depth_frame, crop_size, crop_offset)
@@ -1121,6 +1121,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                         matched_coordinates = depth_coordinate_map.get(depth_to_match)
                         if np.isnan(depth_to_match):
                             self.logger.error('相机无法正确获取深度信息:{}'.format(depth_to_match))
+                            time.sleep(0.01)
                             continue
                             # depth_to_match = 320
                         else:
@@ -1133,8 +1134,9 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             else:
                                 print(f"未找到深度值 {depth_to_match} 对应的坐标点")
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
+                            time.sleep(0.01)
                             # print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
-            self.logger.info('already stop....')
+            self.logger.info('Recognition has stopped....')
 
         else:
             if self.is_open_camera:
@@ -1321,6 +1323,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     coord.extend([177, 0, 90])
                     target_xy_pos3d = coord.copy()[:3]
                     target_xy_pos3d[2] = 50
+                    target_xy_pos3d = [round(num, 2) if isinstance(num, float) else num for num in target_xy_pos3d]
                     # 运动至物体上方
                     self.logger.info('X-Y move: {}'.format(target_xy_pos3d))
                     position_move(self.mc, *target_xy_pos3d)
@@ -1337,11 +1340,13 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     coord.extend([-177, 0, 90])
                     coord_xy = coord.copy()[:3]
                     coord_xy[2] = 50
+                    coord_xy = [round(num, 2) if isinstance(num, float) else num for num in coord_xy]
                     # self.mc.send_coords(coord_xy, 50)
                     # 运行至物体上方
                     self.logger.info('X-Y move: {}'.format(coord_xy))
                     position_move(self.mc, *coord_xy)
                     time.sleep(3)
+                    coord = [round(num, 2) if isinstance(num, float) else num for num in coord]
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
                     self.mc.send_coords(coord, 40, 1)
@@ -1357,6 +1362,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     coord.extend([177, 0, rz])
                     coord_xy = coord.copy()[:3]
                     coord_xy[2] = 50
+                    coord_xy = [round(num, 2) if isinstance(num, float) else num for num in coord_xy]
                     # 运行至物体上方
                     self.logger.info('X-Y move: {}'.format(coord_xy))
                     # self.mc.send_coords(coord_xy, 50)
@@ -1423,11 +1429,13 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 coord.extend([-177, 0, 90])
                 coord_xy = coord.copy()[:3]
                 coord_xy[2] = 50
+                coord_xy = [round(num, 2) if isinstance(num, float) else num for num in coord_xy]
                 # 运动至物体上方
                 self.logger.info('X-Y move: {}'.format(coord_xy))
                 # self.mc.send_coords(coord_xy, 50)
                 position_move(self.mc, *coord_xy)
                 time.sleep(3)
+                coord = [round(num, 2) if isinstance(num, float) else num for num in coord]
                 # 运行至物体表面
                 self.logger.info('Target move: {}'.format(coord))
                 self.mc.send_coords(coord, 40, 1)
@@ -1463,7 +1471,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 if self.algorithm_mode in ['Depalletizing pump', '拆码垛 吸泵']:
                     if self.pos_x != 0 and self.pos_y != 0 and self.pos_z != 0:
                         self.pallet_auto_pick()
-                        time.sleep(0.2)
+                        time.sleep(0.1)
                     else:
                         self.logger.info(
                             '拆码垛程序已抓取完成!!! x-y-z:{} {} {}'.format(self.pos_x, self.pos_y, self.pos_z))
