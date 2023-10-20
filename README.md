@@ -13,13 +13,28 @@ download link：[Intel.RealSense.Viewer.exe
 
 # Install
 
-```angular2html
+```bash
 git clone https://github.com/elephantrobotics/AiKit_3D_UI.git
+```
+
+# Creat Virtual Environment
+
+Created through terminal command, where `virtual_name` is the custom virtual environment name:
+
+```bash
+# Create 
+python -m venv virtual_name
+
+# Activate virtual environment
+cd virtual_name/Scripts
+activate
 ```
 
 # Use
 
-```angular2html
+The premise is to activate the virtual environment
+
+```bash
 cd AiKit_3D_UI
 pip install -r requirements.txt
 ```
@@ -27,7 +42,10 @@ pip install -r requirements.txt
 # Run
 
 - Run in terminal
-```angular2html
+
+The premise is to activate the virtual environment
+
+```bash
 cd AiKit_3D_UI
 
 python main.py
