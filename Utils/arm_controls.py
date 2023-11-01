@@ -36,7 +36,7 @@ def position_move(arm: MyCobot, x, y, z):
     target_coord.extend(curr_rotation)
     MyLogging().logger.info('Move to coords of surface: {}'.format(target_coord))
     print(f"Move to coords : {target_coord}")
-    arm.send_coords(target_coord, 100,0)
+    arm.send_coords(target_coord, 30,0)
 
 
 def release_gripper(arm: MyCobot):

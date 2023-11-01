@@ -76,7 +76,7 @@ class YOLODetector:
         boxes = res.boxes.xywh.numpy()
         boxs_list = []
         for box in boxes:
-            x, y, w, h = box.astype(int)
+            x, y, w, h = box.astype(int)  #x, y for target position
             boxs_list.append((x, y))
         boxs_list = tuple(boxs_list)
         return boxs_list

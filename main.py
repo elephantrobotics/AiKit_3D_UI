@@ -54,8 +54,10 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         self.comboBox_baud.highlighted.connect(self.baud_choose)
         self.comboBox_baud.activated.connect(self.baud_choose)
         self.connect_btn.clicked.connect(self.connect_checked)
+
         self.to_origin_btn.clicked.connect(self.go_home_function)
         self.offset_save_btn.clicked.connect(self.insert_offset)
+
         self.discern_btn.clicked.connect(self.discern_function)
         self.crawl_btn.clicked.connect(self.crawl_function)
         self.place_btn.clicked.connect(self.place_function)
@@ -574,7 +576,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 self.logger.info(go_home_mes)
                 self.mc.send_angles(arm_idle_angle, 50)
                 time.sleep(3)
-            if self.algorithm_mode in self.algorithm_pump:
+            if self.algorithm_mode in self.algorithm_pump: #for pump
                 self.mc.set_tool_reference(tool_frame_pump)
                 time.sleep(0.5)
                 self.mc.set_end_type(1)
@@ -582,7 +584,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 pump_off(self.mc)
                 time.sleep(1.5)
             else:
-                self.mc.set_tool_reference(tool_frame_gripper)
+                self.mc.set_tool_reference(tool_frame_gripper) #for gripper
                 time.sleep(0.5)
                 self.mc.set_end_type(1)
                 time.sleep(1)
@@ -726,19 +728,22 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             if self.is_discern:
                 self.is_discern = False
                 self.btn_color(self.discern_btn, 'blue')
-                self.stop_thread()
-                self.open_camera.release()
-                self.detect_thread.join()
+                self.stop_thread() # a flag
+                self.open_camera.release() #release camera
+                self.detect_thread.join() # wait for the thread stop totally
                 self.open_camera = None
                 self.is_thread_running = True
                 self.is_open_camera = False
                 self.show_camera_lab_depth.clear()
                 self.show_camera_lab_rgb.clear()
+
                 if self.language == 1:
                     self.open_camera_btn.setText('Open')
                 else:
                     self.open_camera_btn.setText('打开')
+
                 self.prompts_lab.clear()
+
                 self.open_camera_btn.setEnabled(False)
                 self.image_coord_btn.setEnabled(False)
                 self.crawl_btn.setEnabled(False)
@@ -1002,7 +1007,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             z = int(floor_depth - depth)
                             # transform angle from camera frame to arm frame
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
-                            print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
+                            print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}") #todo open for detect1
             self.logger.info('Recognition has stopped....')
 
         else:
@@ -1145,6 +1150,9 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                                 x, y = int(x), int(y)
                                 z = int(floor_depth - depth_to_match)
                                 print(f"深度值 {depth_to_match} 对应的坐标点是 {matched_coordinates}")
+
+                                # self.logger.info(f"深度值 {depth_to_match} 对应的坐标点是 {matched_coordinates}")
+
                             else:
                                 print(f"未找到深度值 {depth_to_match} 对应的坐标点")
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
@@ -1364,7 +1372,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 90, 0)
+                    self.mc.send_coords(coord, 40, 0)
                     time.sleep(4)
                 elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪', 'Color recognition gripper']:
                     angle = 0
@@ -1383,10 +1391,11 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(3)
 
                 if self.algorithm_mode in self.algorithm_pump:
+
                     pump_on(self.mc)
-                    time.sleep(4)
-                    self.mc.send_coord(3, 90, 100)
-                    time.sleep(2.5)
+                    time.sleep(2)
+                    self.mc.send_coord(3, 90, 40)
+                    time.sleep(3)
 
                 else:
                     open_gripper(self.mc)
@@ -1414,6 +1423,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         """
         try:
             random_number = random.randint(0, 3)
+
             self.offset_x = int(self.xoffset_edit.text())
             self.offset_y = int(self.yoffset_edit.text())
             self.offset_z = int(self.zoffset_edit.text())
@@ -1443,18 +1453,18 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 coord[1] += final_coord_offset[1] + off_y
                 coord[2] += final_coord_offset[2] + self.pos_z - 20 + off_z
 
-                coord.extend([177, 0, -75])
+                coord.extend([-177, 0, -75])
                 coord_xy = coord.copy()[:3]
                 coord_xy[2] = 50
                 # 运动至物体上方
                 self.logger.info('X-Y move: {}'.format(coord_xy))
                 # self.mc.send_coords(coord_xy, 50)
-                # position_move(self.mc, *coord_xy)
+                position_move(self.mc, *coord_xy)
                 time.sleep(1)
                 # 运行至物体表面
 
                 self.logger.info('Target move to pump: {}'.format(coord))
-                self.mc.send_coords(coord, 80, 0)
+                self.mc.send_coords(coord, 40, 0)
                 time.sleep(4)
 
                 if self.mc.is_in_position(coord, 1):
@@ -1463,7 +1473,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 pump_on(self.mc)
 
                 time.sleep(1.5)
-                self.mc.send_coord(3, 90, 25)
+                self.mc.send_coord(3, 90, 40)
                 time.sleep(5)
 
                 self.mc.send_angles(box_position[random_number], 50)
@@ -1492,7 +1502,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 if self.algorithm_mode in ['Depalletizing pump', '拆码垛 吸泵']:
                     if self.pos_x != 0 and self.pos_y != 0 and self.pos_z != 0:
                         self.pallet_auto_pick()
-                        time.sleep(0.2)
+                        time.sleep(0.5)
                     else:
                         self.logger.info(
                             '拆码垛程序已抓取完成!!! x-y-z:{} {} {}'.format(self.pos_x, self.pos_y, self.pos_z))
