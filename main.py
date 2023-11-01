@@ -1360,7 +1360,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     coord[0] += final_coord_offset[0] + off_x + 5
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + self.pos_z - 20 + off_z
-                    coord.extend([-177, 0, -75])
+                    coord.extend([177, 0, -75])
                     coord_xy = coord.copy()[:3]
                     coord_xy[2] = 50
                     # self.mc.send_coords(coord_xy, 50)
@@ -1370,7 +1370,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 90, 0)
+                    self.mc.send_coords(coord, 40, 0)
                     time.sleep(4)
                     self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
                 elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪', 'Color recognition gripper']:
@@ -1397,10 +1397,10 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
 
                 if self.algorithm_mode in self.algorithm_pump:
                     pump_on(self.mc)
-                    # time.sleep(1.5)
-                    time.sleep(4)
-                    self.mc.send_coord(3, 90, 100)
-                    time.sleep(2.5)
+                    time.sleep(2)
+                    # time.sleep(4)
+                    self.mc.send_coord(3, 90, 40)
+                    time.sleep(3)
 
                 else:
                     print("open gripper for")
@@ -1456,7 +1456,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 coord[0] += final_coord_offset[0] + off_x + 5
                 coord[1] += final_coord_offset[1] + off_y
                 coord[2] += final_coord_offset[2] + self.pos_z - 20 + off_z
-                coord.extend([177, 0, -75])
+                coord.extend([-177, 0, -75])
                 coord_xy = coord.copy()[:3]
                 coord_xy[2] = 50
                 # 运动至物体上方
@@ -1469,7 +1469,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 self.mc.send_coords(coord, 40, 0)
                 time.sleep(3)
                 self.logger.info('Actual coord: {}'.format(self.mc.get_coords()))
-                print("pump xxxxxxxxxxx")
                 pump_on(self.mc)
                 time.sleep(1.5)
                 self.mc.send_coord(3, 90, 40)

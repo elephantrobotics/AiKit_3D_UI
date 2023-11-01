@@ -32,7 +32,7 @@ def position_move(arm: MyCobot, x, y, z):
     target_coord = [x, y, z]
     target_coord.extend(curr_rotation)
     print(f"Move to coords : {target_coord}")
-    arm.send_coords(target_coord, 100)
+    arm.send_coords(target_coord, 30,0)
 
 
 def release_gripper(arm: MyCobot):
