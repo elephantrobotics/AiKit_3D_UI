@@ -1,5 +1,24 @@
 import time
-from pymycobot import MechArm,MyCobot
+from pymycobot import MechArm, MyCobot
+
+import RPi.GPIO as GPIO
+
+GPIO.setwarnings(False)
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(20, GPIO.OUT)
+GPIO.setup(21, GPIO.OUT)
+GPIO.output(20, 1)
+GPIO.output(21, 1)
+
+
+def gpio_status(flag):
+    if flag:
+        GPIO.output(20, 0)
+        GPIO.output(21, 0)
+    else:
+        GPIO.output(20, 1)
+        GPIO.output(21, 1)
 
 
 # 开启吸泵
@@ -32,7 +51,7 @@ def position_move(arm: MyCobot, x, y, z):
     target_coord = [x, y, z]
     target_coord.extend(curr_rotation)
     print(f"Move to coords : {target_coord}")
-    arm.send_coords(target_coord, 30,0)
+    arm.send_coords(target_coord, 30, 0)
 
 
 def release_gripper(arm: MyCobot):

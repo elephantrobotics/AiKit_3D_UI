@@ -158,7 +158,8 @@ def arm_move(color_id, x, y, z, offset_3d=(0, 0, 0)):
     arm.send_coords(coord, 30, 1)
     time.sleep(3.5)
 
-    pump_on(arm)
+    # pump_on(arm)
+    gpio_status(True)
     time.sleep(1.5)
 
     # Raise the z-axis after suction
@@ -168,7 +169,8 @@ def arm_move(color_id, x, y, z, offset_3d=(0, 0, 0)):
     arm.send_angles(box_position[color_id], 50)
     time.sleep(3)
 
-    pump_off(arm)
+    # pump_off(arm)
+    gpio_status(False)
     time.sleep(1.5)
     arm.send_angles(arm_idle_angle, 50)
     time.sleep(4)
