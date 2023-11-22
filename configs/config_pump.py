@@ -1,6 +1,6 @@
 arm_serial_port = "COM27"
-arm_idle_angle = [-90, 0, 0, 0, 90, 0]
-arm_pick_hover_angle = [0, 30, -27, 0, 90, 90]
+arm_idle_angle = [-40, 0, -90, 0, 90, 0]
+arm_pick_hover_angle = [-15, 0, -90, 0, 90, 0]
 arm_drop_angle = [90, 30, -27, 0, 90, 90]
 # 裁剪目标正方形的边长
 crop_size = 180

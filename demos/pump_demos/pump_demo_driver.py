@@ -19,16 +19,13 @@ coords_transformer = CoordCalc(
     plane_frame_size_ratio,
 )
 
-plist = get_port_list()
-# print(plist)
 
-arm = MechArm(plist[0])
+arm = MyCobot('/dev/ttyTHS1', 1000000)
 
 
 def driver(detector, offset_3d=(0, 0, 0)):
     cam = RealSenseCamera()
     cam.capture()
-    # arm = MechArm(arm_serial_port)
     arm.send_angles(arm_idle_angle, 50)
     arm.set_fresh_mode(0)
     time.sleep(1)
