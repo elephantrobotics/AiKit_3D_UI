@@ -20,7 +20,7 @@ import serial.tools.list_ports
 from PyQt6.QtCore import Qt, pyqtSlot, QDateTime, QRegularExpression, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap, QRegularExpressionValidator, QImage
 from PyQt6.QtWidgets import QMainWindow, QWidget, QApplication, QMessageBox
-from pymycobot import MechArm,MyCobot
+from pymycobot.mycobot280 import MyCobot280
 
 sys.path.append(os.getcwd())
 
@@ -480,7 +480,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         def init_robots(*args):
             robot=args[0]
             # if robot==self.M5[0]: self.mc=MechArm(port,baud)
-            if robot=="myCobot 280 for M5": self.mc=MyCobot(port,baud)
+            if robot=="myCobot 280 for M5": self.mc=MyCobot280(port,baud)
 
 
         try:
