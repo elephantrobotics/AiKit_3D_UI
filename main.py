@@ -1169,7 +1169,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
 
         """
         try:
-            self.choose_function()
+            # self.choose_function()
             self.algorithm_mode = self.comboBox_function.currentText()
             if self.algorithm_mode in ['颜色识别 吸泵', 'Color recognition pump', '形状识别 吸泵', 'Shape recognition pump',
                                        '颜色识别 夹爪',
@@ -1308,7 +1308,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 (final_frame_size // 2, final_frame_size // 2),
                 plane_frame_size_ratio,
             )
-            if self.is_crawl and self.is_discern and self.pos_x != 0 and self.pos_y != 0 and self.pos_z != 0:
+            if self.is_crawl and self.is_discern and self.pos_x != 0 and self.pos_y != 0:
                 self.is_pick = False
                 self.mc.send_angles(arm_pick_hover_angle, 50)
                 time.sleep(3)
