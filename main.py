@@ -20,7 +20,7 @@ import serial.tools.list_ports
 from PyQt6.QtCore import Qt, pyqtSlot, QDateTime, QRegularExpression, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap, QRegularExpressionValidator, QImage
 from PyQt6.QtWidgets import QMainWindow, QWidget, QApplication, QMessageBox
-from pymycobot import MechArm
+from pymycobot.mecharm270 import MechArm270
 
 from Utils.coord_calc import CoordCalc
 
@@ -470,7 +470,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             port = self.comboBox_port.currentText()
             baud = self.comboBox_baud.currentText()
             self.algorithm_mode = self.comboBox_function.currentText()
-            self.mc = MechArm(port, baud, thread_lock=True)
+            self.mc = MechArm270(port, baud)
             time.sleep(0.1)
             self.logger.info('connection succeeded !')
             self.is_connected = True
