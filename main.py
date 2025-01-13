@@ -20,7 +20,6 @@ import serial.tools.list_ports
 from PyQt6.QtCore import Qt, pyqtSlot, QDateTime, QRegularExpression, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap, QRegularExpressionValidator, QImage
 from PyQt6.QtWidgets import QMainWindow, QWidget, QApplication, QMessageBox
-from pymycobot import MechArm,MyCobot
 
 from Utils.coord_calc import CoordCalc
 
@@ -35,6 +34,19 @@ from detect.color_detect import ColorDetector
 from detect.yolov8_detect import YOLODetector
 from ObbrecCamera import ObbrecCamera
 from Utils.crop_tools import crop_frame, crop_poly
+import pymycobot
+from packaging import version
+
+# min low version require
+MIN_REQUIRE_VERSION = '3.6.3'
+
+current_verison = pymycobot.__version__
+print('current pymycobot library version: {}'.format(current_verison))
+if version.parse(current_verison) < version.parse(MIN_REQUIRE_VERSION):
+    raise RuntimeError('The version of pymycobot library must be greater than {} or higher. The current version is {}. Please upgrade the library version.'.format(MIN_REQUIRE_VERSION, current_verison))
+else:
+    print('pymycobot library version meets the requirements!')
+    from pymycobot import MyCobot280
 
 
 class AiKit_App(AiKit_window, QMainWindow, QWidget):
@@ -482,7 +494,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             port = self.comboBox_port.currentText()
             baud = self.comboBox_baud.currentText()
             self.algorithm_mode = self.comboBox_function.currentText()
-            self.mc = MyCobot(port, baud)
+            self.mc = MyCobot280(port, baud)
             time.sleep(0.1)
             self.logger.info('connection succeeded !')
             self.is_connected = True

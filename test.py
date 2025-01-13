@@ -69,11 +69,23 @@ class CameraVideoThread(QThread):
 
 '''
 
-from pymycobot.mecharm import MechArm
 from Utils.arm_controls import *
 from configs.all_config import *
+import pymycobot
+from packaging import version
 
-mc = MechArm('COM27', 115200, debug=True)
+# min low version require
+MIN_REQUIRE_VERSION = '3.6.3'
+
+current_verison = pymycobot.__version__
+print('current pymycobot library version: {}'.format(current_verison))
+if version.parse(current_verison) < version.parse(MIN_REQUIRE_VERSION):
+    raise RuntimeError('The version of pymycobot library must be greater than {} or higher. The current version is {}. Please upgrade the library version.'.format(MIN_REQUIRE_VERSION, current_verison))
+else:
+    print('pymycobot library version meets the requirements!')
+    from pymycobot import MechArm270
+
+mc = MechArm270('COM27', 115200, debug=True)
 
 is_coords = True
 

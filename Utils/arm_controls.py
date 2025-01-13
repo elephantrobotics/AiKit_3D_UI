@@ -1,6 +1,18 @@
 import time
-from pymycobot import MyCobot
 from resources.log.logfile import MyLogging
+import pymycobot
+from packaging import version
+
+# min low version require
+MIN_REQUIRE_VERSION = '3.6.3'
+
+current_verison = pymycobot.__version__
+print('current pymycobot library version: {}'.format(current_verison))
+if version.parse(current_verison) < version.parse(MIN_REQUIRE_VERSION):
+    raise RuntimeError('The version of pymycobot library must be greater than {} or higher. The current version is {}. Please upgrade the library version.'.format(MIN_REQUIRE_VERSION, current_verison))
+else:
+    print('pymycobot library version meets the requirements!')
+    from pymycobot import MechArm270
 
 
 
@@ -24,7 +36,7 @@ def pump_off(arm):
     time.sleep(0.05)
 
 
-def position_move(arm: MyCobot, x, y, z):
+def position_move(arm: MechArm270, x, y, z):
     curr_rotation = arm.get_coords()[-3:]
     while len(curr_rotation) == 0:
         curr_rotation = arm.get_coords()[-3:]
@@ -39,13 +51,13 @@ def position_move(arm: MyCobot, x, y, z):
     arm.send_coords(target_coord, 30,0)
 
 
-def release_gripper(arm: MyCobot):
+def release_gripper(arm: MechArm270):
     arm.release_servo(7)
 
 
-def open_gripper(arm: MyCobot):
+def open_gripper(arm: MechArm270):
     arm.set_gripper_value(95, 100)
 
 
-def close_gripper(arm: MyCobot):
+def close_gripper(arm: MechArm270):
     arm.set_gripper_value(5, 100)
