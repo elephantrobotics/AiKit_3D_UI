@@ -8,9 +8,21 @@
 
 import numpy as np
 
-from  pymycobot.mecharm import MechArm
+import pymycobot
+from packaging import version
 
-# mc = MechArm('COM27', 115200)
+# min low version require
+MIN_REQUIRE_VERSION = '3.6.3'
+
+current_verison = pymycobot.__version__
+print('current pymycobot library version: {}'.format(current_verison))
+if version.parse(current_verison) < version.parse(MIN_REQUIRE_VERSION):
+    raise RuntimeError('The version of pymycobot library must be greater than {} or higher. The current version is {}. Please upgrade the library version.'.format(MIN_REQUIRE_VERSION, current_verison))
+else:
+    print('pymycobot library version meets the requirements!')
+    from pymycobot import MechArm270
+
+# mc = MechArm270('COM27', 115200)
 # print(mc.get_coords())
 # mc.send_coords([172.4, -6.092307692307693, 80, -177, 0, 90], 50)
 
@@ -75,7 +87,6 @@ four_dim_array = [[[[277, 124], [250, 282], [94, 256], [119, 100]]]]
 # print(polygon_vertices)
 # 现在，polygon_vertices 是一个二维数组，可以传递给 cv2.fillPoly 函数
 
-import numpy as np
 
 # 给定四个角点的像素坐标
 corners = np.array([[[119, 281], [103, 131], [251, 120], [268, 268]]])
