@@ -1,5 +1,5 @@
 # AiKit_3D_UI
-For AiKit 3D Package Project
+For AiKit 3D Package Project, only supports MechArm 270-M5 devices
 
 # Requires environment
 
@@ -14,7 +14,7 @@ download link：[Intel.RealSense.Viewer.exe
 # Install
 
 ```bash
-git clone https://github.com/elephantrobotics/AiKit_3D_UI.git
+git clone -b realsense_UI https://github.com/elephantrobotics/AiKit_3D_UI.git
 ```
 
 # Creat Virtual Environment
