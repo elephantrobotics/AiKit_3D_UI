@@ -1,5 +1,5 @@
 # AiKit_3D_UI
-For AiKit 3D Package Project
+For AiKit 3D Package Project, only supports MechArm 270-M5 devices
 
 # Requires environment
 
