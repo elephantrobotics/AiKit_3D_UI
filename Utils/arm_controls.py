@@ -37,22 +37,29 @@ def pump_off(arm):
 
 
 def position_move(arm: MechArm270, x, y, z):
-    curr_rotation = arm.get_coords()[-3:]
-    while len(curr_rotation) == 0:
-        curr_rotation = arm.get_coords()[-3:]
+    # curr_rotation = arm.get_coords()[-3:]
+    # while len(curr_rotation) == 0:
+    #     curr_rotation = arm.get_coords()[-3:]
+    #     time.sleep(1)
+    coords = arm.get_coords()
+    # 等待非 None 且长度足够
+    while coords is None or len(coords) < 6:
+        print("获取坐标失败，等待中...")
         time.sleep(1)
-
+        coords = arm.get_coords()
+    curr_rotation = coords[-3:]
     curr_rotation[0] = 177
     curr_rotation[1] = 0
     target_coord = [x, y, z]
     target_coord.extend(curr_rotation)
     MyLogging().logger.info('Move to coords of surface: {}'.format(target_coord))
     print(f"Move to coords : {target_coord}")
-    arm.send_coords(target_coord, 30,0)
+    arm.send_coords(target_coord, 30,1)
 
 
 def release_gripper(arm: MechArm270):
-    arm.release_servo(7)
+    # arm.release_servo(7)
+    arm.set_gripper_state(254, 0)
 
 
 def open_gripper(arm: MechArm270):
@@ -60,4 +67,4 @@ def open_gripper(arm: MechArm270):
 
 
 def close_gripper(arm: MechArm270):
-    arm.set_gripper_value(5, 100)
+    arm.set_gripper_value(45, 100)

@@ -7,6 +7,7 @@ from dataclasses import dataclass, astuple
 import numpy as np
 from typing import List, Tuple
 from Utils.vision_tools import get_angle_from_rect
+import logging
 
 class YOLODetector:
     DetectResult = List[ultralytics.engine.results.Results]
@@ -15,6 +16,7 @@ class YOLODetector:
         """
         init YOLO model。
         """
+        logging.getLogger("ultralytics").setLevel(logging.WARNING)
         self.model_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/resources/yolo/best.pt'
         self.model = YOLO(self.model_path)
         self.predict_args = {"conf": 0.2}

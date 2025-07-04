@@ -20,6 +20,7 @@ import serial.tools.list_ports
 from PyQt6.QtCore import Qt, pyqtSlot, QDateTime, QRegularExpression, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap, QRegularExpressionValidator, QImage
 from PyQt6.QtWidgets import QMainWindow, QWidget, QApplication, QMessageBox
+from PyQt6.sip import isdeleted
 
 from Utils.coord_calc import CoordCalc
 
@@ -43,13 +44,17 @@ MIN_REQUIRE_VERSION = '3.6.3'
 current_verison = pymycobot.__version__
 print('current pymycobot library version: {}'.format(current_verison))
 if version.parse(current_verison) < version.parse(MIN_REQUIRE_VERSION):
-    raise RuntimeError('The version of pymycobot library must be greater than {} or higher. The current version is {}. Please upgrade the library version.'.format(MIN_REQUIRE_VERSION, current_verison))
+    raise RuntimeError(
+        'The version of pymycobot library must be greater than {} or higher. The current version is {}. Please upgrade the library version.'.format(
+            MIN_REQUIRE_VERSION, current_verison))
 else:
     print('pymycobot library version meets the requirements!')
-    from pymycobot import MyCobot280
+    from pymycobot import MyCobot280, MyCobot280Socket
 
 
 class AiKit_App(AiKit_window, QMainWindow, QWidget):
+    choose_function_signal = pyqtSignal()
+
     def __init__(self):
         super(AiKit_App, self).__init__()
         self.setupUi(self)
@@ -61,10 +66,10 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         self.language_btn.clicked.connect(self.set_language)
         self.comboBox_function.highlighted.connect(self.choose_function)
         self.comboBox_function.activated.connect(self.choose_function)
-        self.comboBox_port.highlighted.connect(self.get_serial_port_list)
-        self.comboBox_port.activated.connect(self.get_serial_port_list)
-        self.comboBox_baud.highlighted.connect(self.baud_choose)
-        self.comboBox_baud.activated.connect(self.baud_choose)
+        # self.comboBox_port.highlighted.connect(self.get_serial_port_list)
+        # self.comboBox_port.activated.connect(self.get_serial_port_list)
+        # self.comboBox_baud.highlighted.connect(self.baud_choose)
+        # self.comboBox_baud.activated.connect(self.baud_choose)
         self.connect_btn.clicked.connect(self.connect_checked)
 
         self.to_origin_btn.clicked.connect(self.go_home_function)
@@ -78,7 +83,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         self.open_camera_btn.clicked.connect(self.camera_checked)
         self.add_support_robot_types()
         # self.M5 = ['mechArm 270 for M5']
-        self.M5=['myCobot 280 for M5']
+        self.PI = ['myCobot 280 for PI']
         self.mc = None
         self.port_list = []
         self.logger = MyLogging().logger
@@ -121,11 +126,23 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         self.algorithm_gripper = ['Color recognition gripper', 'yolov8 gripper', '颜色识别 夹爪', 'yolov8 夹爪']
         self._init_main_window()
         self.choose_function()
-        self.get_serial_port_list()
-        self.baud_choose()
+        # self.get_serial_port_list()
+        # self.baud_choose()
         self.init_btn_status(False)
         self.init_offset_tooltip()
         self.offset_change()
+        # self.ip_lineEdit.setPlaceholderText("例如：192.168.1.100")
+        self.choose_function_signal.connect(self.choose_function)
+        # 创建正则表达式验证器
+        port_validator = QRegularExpressionValidator()
+        ip_validator = QRegularExpressionValidator()
+        # 设置正则表达式
+        port_validator.setRegularExpression(
+            QRegularExpression("^(?:[0-9]|[1-9][0-9]{1,3}|[1-5][0-9]{4}|6[0-5][0-5][0-3][0-5])$"))
+        ip_validator.setRegularExpression(QRegularExpression(
+            r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"))
+        self.ip_lineEdit.setValidator(ip_validator)
+        self.port_lineEdit.setValidator(port_validator)
 
     def _init_main_window(self):
         """
@@ -254,8 +271,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             else:
                 self.connect_btn.setText("DISCONNECT")
             self.device_lab.setText("Device")
-            self.baud_lab.setText("Baud")
-            self.port_lab.setText("Serial Port")
+            self.port_lab.setText("Port")
+            self.ip_lab.setText("IP Address")
             self.control_lab.setText("Control")
             self.to_origin_btn.setText("Go")
             self.home_lab.setText("Homing")
@@ -302,8 +319,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             else:
                 self.connect_btn.setText("连接")
             self.device_lab.setText("设备")
-            self.baud_lab.setText("波特率")
-            self.port_lab.setText("串口")
+            self.port_lab.setText("端口号")
+            self.ip_lab.setText("IP地址")
             self.control_lab.setText("控制")
             self.to_origin_btn.setText("运行")
             self.home_lab.setText("初始点")
@@ -379,6 +396,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             regex = QRegularExpression(r'^-?(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$')
             validator = QRegularExpressionValidator(regex)
             edit_widgets = [self.xoffset_edit, self.yoffset_edit, self.zoffset_edit]
+
             for edit_widget in edit_widgets:
                 edit_widget.setValidator(validator)
             self.offset_change()
@@ -392,6 +410,12 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         except Exception as e:
             e = traceback.format_exc()
             self.logger.error(str(e))
+
+    def check_ip_port(self):
+        """
+        检查IP地址是否合格
+        """
+        pass
 
     def get_serial_port_list(self):
         """
@@ -425,14 +449,12 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             e = traceback.format_exc()
             self.logger.error(str(e))
 
-
     def add_support_robot_types(self):
         """
         增加后续可支持的机型
         """
         self.comboBox_device.clear()
-        self.comboBox_device.addItem("myCobot 280 for M5")
-
+        self.comboBox_device.addItem("myCobot 280 for PI")
 
     def baud_choose(self):
         """
@@ -465,6 +487,22 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             e = traceback.format_exc()
             self.logger.error(str(e))
 
+    def is_valid_ip(self, ip):
+        parts = ip.split('.')
+        if len(parts) != 4:
+            return False
+        for part in parts:
+            if not part.isdigit() or not 0 <= int(part) <= 255:
+                return False
+        return True
+
+    def is_valid_port(self, port):
+        try:
+            port = int(port)
+            return 1024 <= port <= 65535 and port != 9999
+        except ValueError:
+            return False
+
     def robotics_connect(self):
         """
         启动机械臂连接的子线程
@@ -472,31 +510,58 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
 
         """
         try:
+            ip = self.ip_lineEdit.text()
+            port_text = self.port_lineEdit.text()
+            algorithm_mode = self.comboBox_function.currentText()
+
+            # 这里校验ip、端口合法性（同步UI线程安全操作）
+            if not self.is_valid_ip(ip):
+                if self.language == 1:
+                    QMessageBox.warning(self, "Error", "Please enter a valid IP")
+                else:
+                    QMessageBox.warning(self, "错误", "请输入合法IP")
+                return
+
+            if not port_text.isdigit() or not self.is_valid_port(port_text):
+                if self.language == 1:
+                    QMessageBox.warning(self, "error", "Please enter a valid port number. The default is 9000, the range is 1024~65535, and cannot be 9999")
+                else:
+                    QMessageBox.warning(self, "错误", "请输入合法端口，默认是9000，范围1024~65535，且不能为9999")
+                return
+            port = int(port_text)
+
+            self.comboBox_device.setEnabled(False)
+            self.ip_lineEdit.setEnabled(False)
+            self.port_lineEdit.setEnabled(False)
             self.prompts_lab.clear()
             device = self.comboBox_device.currentText()
-            if device == 'myCobot 280 for M5':
-                init_robotics = threading.Thread(target=self.init_270_M5)
+            if device == 'myCobot 280 for PI':
+                init_robotics = threading.Thread(target=self.init_280_PI, args=(ip, port, algorithm_mode))
                 init_robotics.start()
         except Exception as e:
             e = traceback.format_exc()
             self.logger.error(str(e))
 
-    def init_270_M5(self):
+    def init_280_PI(self, ip, port, algorithm_mode):
         """
         连接机械臂，并对机械臂进行一些初始化
         Returns:
 
         """
         try:
-            self.comboBox_device.setEnabled(False)
-            self.comboBox_baud.setEnabled(False)
-            self.comboBox_port.setEnabled(False)
-            port = self.comboBox_port.currentText()
-            baud = self.comboBox_baud.currentText()
-            self.algorithm_mode = self.comboBox_function.currentText()
-            self.mc = MyCobot280(port, baud)
-            time.sleep(0.1)
+            # self.comboBox_device.setEnabled(False)
+            # self.ip_lineEdit.setEnabled(False)
+            # self.port_lineEdit.setEnabled(False)
+            # ip = self.ip_lineEdit.text()
+            # port = int(self.port_lineEdit.text())
+            self.algorithm_mode = algorithm_mode
+            # self.algorithm_mode = self.comboBox_function.currentText()
+            self.mc = MyCobot280Socket(ip, port)
+            time.sleep(1)
             self.logger.info('connection succeeded !')
+            self.mc.set_gpio_mode('BCM')
+            self.mc.set_gpio_out(20, 'out')
+            self.mc.set_gpio_out(21, 'out')
             self.is_connected = True
             self.init_btn_status(True)
             self.current_coord_btn.setEnabled(True)
@@ -512,8 +577,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             error_mes = 'Connection failed !!!:{}'.format(e)
             self.mc = None
             self.is_connected = False
-            self.comboBox_port.setEnabled(True)
-            self.comboBox_baud.setEnabled(False)
+            self.ip_lineEdit.setEnabled(True)
+            self.port_lineEdit.setEnabled(False)
             self.comboBox_device.setEnabled(True)
             self.init_btn_status(False)
             if self.language == 1:
@@ -549,8 +614,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             self.mc = None
             self.logger.info("Disconnected successfully !")
             self.is_connected = False
-            self.comboBox_port.setEnabled(True)
-            self.comboBox_baud.setEnabled(True)
+            self.port_lineEdit.setEnabled(True)
+            self.ip_lineEdit.setEnabled(True)
             self.comboBox_device.setEnabled(True)
             self.comboBox_function.setEnabled(True)
             if self.language == 1:
@@ -573,6 +638,23 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             e = traceback.format_exc()
             self.logger.info("Not yet connected to mycobot！！！{}".format(str(e)))
 
+    # 开启吸泵
+    def pump_on(self):
+        # 打开电磁阀
+        self.mc.set_gpio_output(20, 0)
+        time.sleep(0.05)
+
+    # 停止吸泵
+    def pump_off(self):
+        # 关闭电磁阀
+        self.mc.set_gpio_output(20, 1)
+        time.sleep(0.05)
+        # 泄气阀门开始工作
+        self.mc.set_gpio_output(21, 0)
+        time.sleep(1)
+        self.mc.set_gpio_output(21, 1)
+        time.sleep(0.05)
+
     def robot_go_home(self):
         """
         控制机械臂回到初始点 [-90, 0, 0, 0, 90, 0]
@@ -584,19 +666,19 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             time.sleep(0.5)
             device = self.comboBox_device.currentText()
             go_home_mes = 'The robot moves to the initial point'
-            if device in self.M5:
+            if device in self.PI:
                 self.logger.info(go_home_mes)
                 self.mc.send_angles(arm_idle_angle, 50)
                 time.sleep(3)
-            if self.algorithm_mode in self.algorithm_pump: #for pump
+            if self.algorithm_mode in self.algorithm_pump:  # for pump
                 self.mc.set_tool_reference(tool_frame_pump)
                 time.sleep(0.5)
                 self.mc.set_end_type(1)
                 time.sleep(1)
-                pump_off(self.mc)
+                self.pump_off()
                 time.sleep(1.5)
             else:
-                self.mc.set_tool_reference(tool_frame_gripper) #for gripper
+                self.mc.set_tool_reference(tool_frame_gripper)  # for gripper
                 time.sleep(0.5)
                 self.mc.set_end_type(1)
                 time.sleep(1)
@@ -740,9 +822,9 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             if self.is_discern:
                 self.is_discern = False
                 self.btn_color(self.discern_btn, 'blue')
-                self.stop_thread() # a flag
-                self.open_camera.release() #release camera
-                self.detect_thread.join() # wait for the thread stop totally
+                self.stop_thread()  # a flag
+                self.open_camera.release()  # release camera
+                self.detect_thread.join()  # wait for the thread stop totally
                 self.open_camera = None
                 self.is_thread_running = True
                 self.is_open_camera = False
@@ -938,7 +1020,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 self.open_camera.update_frame()
                 color_frame = self.open_camera.color_frame()
                 depth_frame = self.open_camera.depth_frame()
-                
+
                 if color_frame is None or depth_frame is None:
                     # time.sleep(0.1)
                     continue
@@ -1019,7 +1101,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             z = int(floor_depth - depth)
                             # transform angle from camera frame to arm frame
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
-                            print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}") #todo open for detect1
+                            # print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}") #todo open for detect1
             self.logger.info('Recognition has stopped....')
 
         else:
@@ -1168,7 +1250,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             else:
                                 print(f"未找到深度值 {depth_to_match} 对应的坐标点")
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
-                            print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
+                            # print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
             self.logger.info('already stop....')
 
         else:
@@ -1200,9 +1282,12 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
 
         """
         try:
-            self.choose_function()
+            # self.choose_function()
+            self.choose_function_signal.emit()
+            time.sleep(0.05)
             self.algorithm_mode = self.comboBox_function.currentText()
-            if self.algorithm_mode in ['颜色识别 吸泵', 'Color recognition pump', '形状识别 吸泵', 'Shape recognition pump',
+            if self.algorithm_mode in ['颜色识别 吸泵', 'Color recognition pump', '形状识别 吸泵',
+                                       'Shape recognition pump',
                                        '颜色识别 夹爪',
                                        'Color recognition gripper']:
                 self.display_open_camera_1(detector)
@@ -1222,7 +1307,6 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
             if self.is_discern:
                 # self.choose_function()
                 self.algorithm_mode = self.comboBox_function.currentText()
-
                 self.offset_x = int(self.xoffset_edit.text())
                 self.offset_y = int(self.yoffset_edit.text())
                 self.offset_z = int(self.zoffset_edit.text())
@@ -1348,34 +1432,35 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 coord = list(coord)
                 # adjust final offset
                 off_x, off_y, off_z = (self.offset_x, self.offset_y, self.offset_z)
-                if self.algorithm_mode in ['颜色识别 吸泵', 'Color recognition pump', '形状识别 吸泵', 'Shape recognition pump']:
+
+                if self.algorithm_mode in ['颜色识别 吸泵', 'Color recognition pump', '形状识别 吸泵',
+                                           'Shape recognition pump']:
 
                     coord[0] += final_coord_offset[0] + off_x
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + off_z + self.pos_z
 
                     coord.extend([-177, 0, -75])
-                    
+
                     target_xy_pos3d = coord.copy()[:3]
                     target_xy_pos3d[2] = 50
                     # 运动至物体上方
                     self.logger.info('X-Y move: {}'.format(target_xy_pos3d))
-            
+
                     position_move(self.mc, *target_xy_pos3d)
                     time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 90, 0)
+                    self.mc.send_coords(coord, 90, 1)
                     time.sleep(4)
                 elif self.algorithm_mode in ['yolov8 pump', 'yolov8 吸泵']:
                     coord[0] += final_coord_offset[0] + off_x + 5
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + self.pos_z - 20 + off_z
-          
+
                     coord.extend([-177, 0, -75])
                     coord_xy = coord.copy()[:3]
                     coord_xy[2] = 50
-
 
                     # self.mc.send_coords(coord_xy, 50)
                     # 运行至物体上方
@@ -1384,9 +1469,10 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 40, 0)
+                    self.mc.send_coords(coord, 40, 1)
                     time.sleep(4)
-                elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪', 'Color recognition gripper']:
+                elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪',
+                                             'Color recognition gripper']:
                     angle = 0
                     coord[0] += final_coord_offset[0] + off_x
                     coord[1] += final_coord_offset[1] + off_y
@@ -1403,8 +1489,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(3)
 
                 if self.algorithm_mode in self.algorithm_pump:
-
-                    pump_on(self.mc)
+                    self.pump_on()
                     time.sleep(2)
                     self.mc.send_coord(3, 90, 40)
                     time.sleep(3)
@@ -1413,7 +1498,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     open_gripper(self.mc)
                     time.sleep(3)
                     # self.mc.send_coords(coord, 40, 1)
-                    self.mc.send_coord(3,20,50)
+                    self.mc.send_coord(3, off_z, 50)
                     time.sleep(3)
                     close_gripper(self.mc)
                     time.sleep(3)
@@ -1476,21 +1561,20 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 # 运行至物体表面
 
                 self.logger.info('Target move to pump: {}'.format(coord))
-                self.mc.send_coords(coord, 40, 0)
+                self.mc.send_coords(coord, 40, 1)
                 time.sleep(4)
 
                 if self.mc.is_in_position(coord, 1):
                     pass
 
-                pump_on(self.mc)
-
-                time.sleep(1.5)
+                self.pump_on()
+                time.sleep(2)
                 self.mc.send_coord(3, 90, 40)
                 time.sleep(5)
 
                 self.mc.send_angles(box_position[random_number], 50)
                 time.sleep(3)
-                pump_off(self.mc)
+                self.pump_off()
                 time.sleep(1.5)
                 self.mc.send_angles(arm_idle_angle, 50)
                 time.sleep(4)
@@ -1548,7 +1632,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 self.mc.send_angles(box_position[pos_id], 50)
                 time.sleep(3)
                 if self.algorithm_mode in self.algorithm_pump:
-                    pump_off(self.mc)
+                    self.pump_off()
                     self.mc.send_angles(arm_idle_angle, 50)
                     time.sleep(4)
                 else:

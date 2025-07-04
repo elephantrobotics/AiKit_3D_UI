@@ -200,7 +200,7 @@ color: rgb(255, 255, 255);</string>
        </size>
       </property>
       <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
+       <enum>QFrame::Shape::NoFrame</enum>
       </property>
       <property name="widgetResizable">
        <bool>true</bool>
@@ -364,7 +364,7 @@ border-style: outset;</string>
                   <widget class="QWidget" name="widget_3" native="true">
                    <layout class="QVBoxLayout" name="verticalLayout_2">
                     <item>
-                     <widget class="QLabel" name="port_lab">
+                     <widget class="QLabel" name="ip_lab">
                       <property name="font">
                        <font>
                         <family>Arial</family>
@@ -375,7 +375,7 @@ border-style: outset;</string>
                        <string notr="true">background-color: rgb(255, 255, 255，200);</string>
                       </property>
                       <property name="text">
-                       <string>Serial Port</string>
+                       <string>IP Address</string>
                       </property>
                      </widget>
                     </item>
@@ -396,7 +396,7 @@ border-style: outset;</string>
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLabel" name="baud_lab">
+                     <widget class="QLabel" name="port_lab">
                       <property name="font">
                        <font>
                         <family>Arial</family>
@@ -407,7 +407,7 @@ border-style: outset;</string>
                        <string notr="true">background-color: rgb(255, 255, 255，200);</string>
                       </property>
                       <property name="text">
-                       <string>Baud</string>
+                       <string>Port</string>
                       </property>
                      </widget>
                     </item>
@@ -418,17 +418,28 @@ border-style: outset;</string>
                   <widget class="QWidget" name="widget_4" native="true">
                    <layout class="QVBoxLayout" name="verticalLayout_3">
                     <item>
-                     <widget class="QComboBox" name="comboBox_port">
+                     <widget class="QLineEdit" name="ip_lineEdit">
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>25</height>
+                       </size>
+                      </property>
                       <property name="font">
                        <font>
-                        <family>Arial</family>
-                        <bold>false</bold>
+                        <pointsize>10</pointsize>
                        </font>
                       </property>
                      </widget>
                     </item>
                     <item>
                      <widget class="QComboBox" name="comboBox_device">
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>25</height>
+                       </size>
+                      </property>
                       <property name="font">
                        <font>
                         <family>Arial</family>
@@ -437,29 +448,30 @@ border-style: outset;</string>
                       </property>
                       <item>
                        <property name="text">
-                        <string>mechArm 270 for M5</string>
+                        <string>myCobot 280 for PI</string>
                        </property>
                       </item>
                      </widget>
                     </item>
                     <item>
-                     <widget class="QComboBox" name="comboBox_baud">
+                     <widget class="QLineEdit" name="port_lineEdit">
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>25</height>
+                       </size>
+                      </property>
                       <property name="font">
                        <font>
-                        <family>Arial</family>
-                        <bold>false</bold>
+                        <pointsize>10</pointsize>
                        </font>
                       </property>
-                      <item>
-                       <property name="text">
-                        <string>115200</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>1000000</string>
-                       </property>
-                      </item>
+                      <property name="styleSheet">
+                       <string notr="true"/>
+                      </property>
+                      <property name="text">
+                       <string>9000</string>
+                      </property>
                      </widget>
                     </item>
                    </layout>
@@ -1338,7 +1350,7 @@ border-style: outset;</string>
                     <string/>
                    </property>
                    <property name="alignment">
-                    <set>Qt::AlignCenter</set>
+                    <set>Qt::AlignmentFlag::AlignCenter</set>
                    </property>
                    <property name="margin">
                     <number>0</number>
@@ -1555,7 +1567,7 @@ border-style: outset;</string>
                     <string>Camera Color Screen</string>
                    </property>
                    <property name="alignment">
-                    <set>Qt::AlignCenter</set>
+                    <set>Qt::AlignmentFlag::AlignCenter</set>
                    </property>
                    <property name="margin">
                     <number>0</number>
@@ -1591,7 +1603,7 @@ border-style: outset;</string>
                     <string>Camera Depth Screen</string>
                    </property>
                    <property name="alignment">
-                    <set>Qt::AlignCenter</set>
+                    <set>Qt::AlignmentFlag::AlignCenter</set>
                    </property>
                   </widget>
                  </item>
