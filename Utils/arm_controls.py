@@ -43,18 +43,18 @@ def position_move(arm: MechArm270, x, y, z):
     #     time.sleep(1)
     coords = arm.get_coords()
     # 等待非 None 且长度足够
-    while coords is None or len(coords) < 6:
+    while coords is None or coords == -1 or len(coords) < 6:
         print("获取坐标失败，等待中...")
-        time.sleep(1)
         coords = arm.get_coords()
+        time.sleep(1)
     curr_rotation = coords[-3:]
-    curr_rotation[0] = 177
+    curr_rotation[0] = 179
     curr_rotation[1] = 0
     target_coord = [x, y, z]
     target_coord.extend(curr_rotation)
     MyLogging().logger.info('Move to coords of surface: {}'.format(target_coord))
-    print(f"Move to coords : {target_coord}")
-    arm.send_coords(target_coord, 30,1)
+    print(f"Move to coords ----------> : {target_coord}")
+    arm.send_coords(target_coord, 70,1)
 
 
 def release_gripper(arm: MechArm270):

@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import numpy as np
 from typing import Tuple, Any
@@ -21,12 +23,13 @@ class ColorDetector:
             return iter(astuple(self))
 
     def __init__(self) -> None:
-        self.area_low_threshold = 15000
+        self.area_low_threshold = 10000
         self.detected_name = None
         self.hsv_range = {
             "green": ((40, 50, 50), (90, 256, 256)),
             "blueA": ((91, 100, 100), (105, 256, 256)),
-            "yellow": ((20, 240, 170), (30, 256, 256)),
+            "yellow": ((20, 100, 100), (35, 256, 256)),
+            # "yellowA": ((11, 85, 70), (59, 256, 256)),
             "redA": ((0, 100, 100), (6, 256, 256)),
             "redB": ((170, 100, 100), (179, 256, 256)),
             # "orange": ((8, 100, 100), (15, 256, 256)),
@@ -60,7 +63,9 @@ class ColorDetector:
             contours, hierarchy = cv2.findContours(
                 in_range, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
-
+            # for i, cnt in enumerate(contours):
+            #     area = cv2.contourArea(cnt)
+            #     print(f"[{color}] 轮廓 {i} 面积: {area}")
             contours = list(
                 filter(lambda x: cv2.contourArea(x) > self.area_low_threshold, contours)
             )
@@ -72,6 +77,12 @@ class ColorDetector:
             if len(boxes) != 0:
                 if color.startswith("red"):
                     color = "red"
+                elif color.startswith("yellow"):
+                    color = "yellow"
+                elif color.startswith("green"):
+                    color = "green"
+                elif color.startswith("blue"):
+                    color = "blue"
                 for box in boxes:
                     result.append(ColorDetector.DetectResult(color, box))
                     # self.detected_name = result

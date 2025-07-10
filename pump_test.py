@@ -1,5 +1,5 @@
 """
-run_test.py
+pump_test.py
 This module controls the robotic arm movements.
 
 Author: Wang Weijian
@@ -8,16 +8,13 @@ Date: 2025-07-04
 from pymycobot import MyCobot280Socket
 import time
 
-mc = MyCobot280Socket('192.168.1.240', 9000)
+mc = MyCobot280Socket('192.168.123.226', 9000)
 time.sleep(2)
-# print(mc.get_angles())
+print(mc.get_angles())
 # mc.set_fresh_mode(1)
 # time.sleep(1)
 
-
-mc.go_home()
-time.sleep(2)
-print(mc.get_fresh_mode())
+print(mc.get_angles())
 
 mc.set_gpio_mode('BCM')
 mc.set_gpio_out(20, 'out')
