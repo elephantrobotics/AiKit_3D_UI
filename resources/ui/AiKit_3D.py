@@ -797,7 +797,7 @@ class Ui_AiKit_UI(object):
     def retranslateUi(self, AiKit_UI):
         _translate = QtCore.QCoreApplication.translate
         AiKit_UI.setWindowTitle(_translate("AiKit_UI", "MainWindow"))
-        self.title.setText(_translate("AiKit_UI", "Elephant Robotics AI Kits 3D"))
+        self.title.setText(_translate("AiKit_UI", "Elephant Robotics AI Kits 3D V1.0.0"))
         self.connect_lab.setText(_translate("AiKit_UI", "Connection"))
         self.connect_btn.setText(_translate("AiKit_UI", "CONNECT"))
         self.ip_lab.setText(_translate("AiKit_UI", "IP Address"))
