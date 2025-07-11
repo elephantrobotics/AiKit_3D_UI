@@ -17,9 +17,9 @@ import cv2
 import numpy as np
 import serial
 import serial.tools.list_ports
-from PyQt6.QtCore import Qt, pyqtSlot, QDateTime, QRegularExpression, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSlot, QDateTime, QRegularExpression, QThread, pyqtSignal, QObject
 from PyQt6.QtGui import QPixmap, QRegularExpressionValidator, QImage
-from PyQt6.QtWidgets import QMainWindow, QWidget, QApplication, QMessageBox
+from PyQt6.QtWidgets import QMainWindow, QWidget, QApplication, QMessageBox, QPushButton
 
 from Utils.coord_calc import CoordCalc
 
@@ -50,6 +50,12 @@ else:
 
 
 class AiKit_App(AiKit_window, QMainWindow, QWidget):
+    choose_function_signal = pyqtSignal()
+    set_button_color = pyqtSignal(QPushButton, str)
+    update_btn_state = pyqtSignal(QObject, bool)  # 对象 + 状态（True/False）
+    update_rgb_signal = pyqtSignal(QPixmap)
+    update_depth_signal = pyqtSignal(QPixmap)
+
     def __init__(self):
         super(AiKit_App, self).__init__()
         self.setupUi(self)
@@ -126,6 +132,15 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         self.init_btn_status(False)
         self.init_offset_tooltip()
         self.offset_change()
+
+        self.choose_function_signal.connect(self.choose_function)
+        self.set_button_color.connect(lambda btn, color: self.btn_color(btn, color))
+        self.update_btn_state.connect(self.set_btn_enabled)
+
+        self.update_rgb_signal.connect(self.show_camera_lab_rgb.setPixmap)
+        self.update_depth_signal.connect(
+            lambda pixmap: self.show_camera_lab_depth.setPixmap(pixmap.scaled(390, 390))
+        )
 
     def _init_main_window(self):
         """
@@ -826,7 +841,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 self.btn_color(self.place_btn, 'blue')
             else:
                 self.is_place = True
-                self.btn_color(self.place_btn, 'red')
+                # self.btn_color(self.place_btn, 'red')
+                self.set_button_color.emit(self.place_btn, 'red')
                 # self.robot_place_move()
                 place_move = threading.Thread(target=self.robot_place_move)
                 place_move.start()
@@ -972,8 +988,10 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     depth_pixmap = QPixmap.fromImage(depth_frame_qimage)
 
                     # Set the QPixmap to QLabel
-                    self.show_camera_lab_rgb.setPixmap(color_pixmap)
-                    self.show_camera_lab_depth.setPixmap(depth_pixmap.scaled(390, 390))
+                    # self.show_camera_lab_rgb.setPixmap(color_pixmap)
+                    # self.show_camera_lab_depth.setPixmap(depth_pixmap.scaled(390, 390))
+                    self.update_rgb_signal.emit(color_pixmap)
+                    self.update_depth_signal.emit(depth_pixmap)
                 if color_frame is None:
                     continue
                 res = detector.detect(color_frame)
@@ -991,7 +1009,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             QImage.Format.Format_RGB888,
                         )
                         color_pixmap = QPixmap.fromImage(color_frame_qimage)
-                        self.show_camera_lab_rgb.setPixmap(color_pixmap)
+                        # self.show_camera_lab_rgb.setPixmap(color_pixmap)
+                        self.update_rgb_signal.emit(color_pixmap)
                         # interpret result
                         obj_configs = []
                         for obj in res:
@@ -1019,7 +1038,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             z = int(floor_depth - depth)
                             # transform angle from camera frame to arm frame
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
-                            print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}") #todo open for detect1
+                            # print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}") #todo open for detect1
             self.logger.info('Recognition has stopped....')
 
         else:
@@ -1084,8 +1103,10 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     depth_pixmap = QPixmap.fromImage(depth_frame_qimage)
 
                     # Set the QPixmap to QLabel
-                    self.show_camera_lab_rgb.setPixmap(color_pixmap)
-                    self.show_camera_lab_depth.setPixmap(depth_pixmap.scaled(390, 390))
+                    # self.show_camera_lab_rgb.setPixmap(color_pixmap)
+                    # self.show_camera_lab_depth.setPixmap(depth_pixmap.scaled(390, 390))
+                    self.update_rgb_signal.emit(color_pixmap)
+                    self.update_depth_signal.emit(depth_pixmap)
                 if color_frame is None:
                     continue
                 res = detector.detect(color_frame)
@@ -1104,7 +1125,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                                 QImage.Format.Format_RGB888,
                             )
                             color_pixmap = QPixmap.fromImage(color_frame_qimage)
-                            self.show_camera_lab_rgb.setPixmap(color_pixmap)
+                            # self.show_camera_lab_rgb.setPixmap(color_pixmap)
+                            self.update_rgb_signal.emit(color_pixmap)
                         # interpret result
                         obj_configs = []
                         # Multi-target coordinate results
@@ -1168,7 +1190,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                             else:
                                 print(f"未找到深度值 {depth_to_match} 对应的坐标点")
                             self.pos_x, self.pos_y, self.pos_z = x, y, z
-                            print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
+                            # print(f"Raw pos_x,pos_y,pos_z : {self.pos_x} {self.pos_y} {self.pos_z}")
             self.logger.info('already stop....')
 
         else:
@@ -1200,7 +1222,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
 
         """
         try:
-            self.choose_function()
+            # self.choose_function()
             self.algorithm_mode = self.comboBox_function.currentText()
             if self.algorithm_mode in ['颜色识别 吸泵', 'Color recognition pump', '形状识别 吸泵', 'Shape recognition pump',
                                        '颜色识别 夹爪',
@@ -1221,6 +1243,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         try:
             if self.is_discern:
                 # self.choose_function()
+                self.choose_function_signal.emit()
                 self.algorithm_mode = self.comboBox_function.currentText()
 
                 self.offset_x = int(self.xoffset_edit.text())
@@ -1354,7 +1377,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + off_z + self.pos_z
 
-                    coord.extend([-177, 0, -75])
+                    coord.extend([177, 0, -75])
                     
                     target_xy_pos3d = coord.copy()[:3]
                     target_xy_pos3d[2] = 50
@@ -1365,14 +1388,14 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 90, 0)
+                    self.mc.send_coords(coord, 90, 1)
                     time.sleep(4)
                 elif self.algorithm_mode in ['yolov8 pump', 'yolov8 吸泵']:
                     coord[0] += final_coord_offset[0] + off_x + 5
                     coord[1] += final_coord_offset[1] + off_y
                     coord[2] += final_coord_offset[2] + self.pos_z - 20 + off_z
           
-                    coord.extend([-177, 0, -75])
+                    coord.extend([177, 0, -75])
                     coord_xy = coord.copy()[:3]
                     coord_xy[2] = 50
 
@@ -1384,7 +1407,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     time.sleep(4)
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
-                    self.mc.send_coords(coord, 40, 0)
+                    self.mc.send_coords(coord, 70, 1)
                     time.sleep(4)
                 elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪', 'Color recognition gripper']:
                     angle = 0
@@ -1413,14 +1436,15 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     open_gripper(self.mc)
                     time.sleep(3)
                     # self.mc.send_coords(coord, 40, 1)
-                    self.mc.send_coord(3,20,50)
+                    self.mc.send_coord(3,off_z,50)
                     time.sleep(3)
                     close_gripper(self.mc)
                     time.sleep(3)
                     self.mc.send_coord(3, 90, 50)
                     time.sleep(2.5)
                 self.is_crawl = False
-                self.btn_color(self.crawl_btn, 'blue')
+                # self.btn_color(self.crawl_btn, 'blue')
+                self.set_button_color.emit(self.crawl_btn, 'blue')
             else:
                 self.logger.error('请先开启识别程序....')
         except Exception as e:
@@ -1464,8 +1488,7 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 coord[0] += final_coord_offset[0] + off_x + 5
                 coord[1] += final_coord_offset[1] + off_y
                 coord[2] += final_coord_offset[2] + self.pos_z - 20 + off_z
-
-                coord.extend([-177, 0, -75])
+                coord.extend([177, 0, -75])
                 coord_xy = coord.copy()[:3]
                 coord_xy[2] = 50
                 # 运动至物体上方
@@ -1476,12 +1499,14 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                 # 运行至物体表面
 
                 self.logger.info('Target move to pump: {}'.format(coord))
-                self.mc.send_coords(coord, 40, 0)
-                time.sleep(4)
-
-                if self.mc.is_in_position(coord, 1):
-                    pass
-
+                self.mc.send_coords(coord, 70, 1)
+                # time.sleep(4)
+                while self.mc.is_moving():
+                    time.sleep(0.2)
+                time.sleep(1)
+                if self.mc.is_in_position(coord, 1) != 1:
+                    self.mc.send_coords(coord, 70, 1)
+                time.sleep(1)
                 pump_on(self.mc)
 
                 time.sleep(1.5)
@@ -1519,7 +1544,8 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                         self.logger.info(
                             '拆码垛程序已抓取完成!!! x-y-z:{} {} {}'.format(self.pos_x, self.pos_y, self.pos_z))
                         self.is_crawl = False
-                        self.btn_color(self.crawl_btn, 'blue')
+                        # self.btn_color(self.crawl_btn, 'blue')
+                        self.set_button_color.emit(self.crawl_btn, 'blue')
                         break
                 else:
                     self.logger.info('当前不是拆码垛程序!!!')
@@ -1559,8 +1585,10 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     release_gripper(self.mc)
                     time.sleep(0.1)
                 self.is_place = False
-                self.place_btn.setEnabled(False)
-                self.btn_color(self.place_btn, 'gray')
+                # self.place_btn.setEnabled(False)
+                self.update_btn_state.emit(self.place_btn, False)
+                # self.btn_color(self.place_btn, 'gray')
+                self.set_button_color.emit(self.place_btn, 'gray')
                 time.sleep(1.5)
                 self.is_pick = True
             else:

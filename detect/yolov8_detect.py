@@ -1,3 +1,4 @@
+import logging
 import os
 
 import cv2
@@ -15,6 +16,7 @@ class YOLODetector:
         """
         init YOLO model。
         """
+        logging.getLogger("ultralytics").setLevel(logging.WARNING)
         self.model_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/resources/yolo/best.pt'
         self.model = YOLO(self.model_path)
         self.predict_args = {"conf": 0.2}

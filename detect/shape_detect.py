@@ -72,7 +72,7 @@ class ShapeDetector:
         for cnt in contours:
             if cv2.contourArea(cnt) < 13000:
                 continue
-            print('erar:', cv2.contourArea(cnt))
+            # print('erar:', cv2.contourArea(cnt))
             # PolyDP
             peri = cv2.arcLength(cnt, True)
             approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
@@ -84,7 +84,7 @@ class ShapeDetector:
 
             x = int(rect[0][0])
             y = int(rect[0][1])
-            print('xyxy:', objCor)
+            # print('xyxy:', objCor)
             if objCor == 3:
                 objectType = ObjectShapeType.triangle
                 res.append(self.ShapeDetectResult(objectType, cnt, (x, y)))

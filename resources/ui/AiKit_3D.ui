@@ -184,7 +184,7 @@
 color: rgb(255, 255, 255);</string>
          </property>
          <property name="text">
-          <string>Elephant Robotics AI Kits 3D</string>
+          <string>Elephant Robotics AI Kits 3D V1.0.0</string>
          </property>
         </widget>
        </item>
@@ -200,7 +200,7 @@ color: rgb(255, 255, 255);</string>
        </size>
       </property>
       <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
+       <enum>QFrame::Shape::NoFrame</enum>
       </property>
       <property name="widgetResizable">
        <bool>true</bool>
@@ -1338,7 +1338,7 @@ border-style: outset;</string>
                     <string/>
                    </property>
                    <property name="alignment">
-                    <set>Qt::AlignCenter</set>
+                    <set>Qt::AlignmentFlag::AlignCenter</set>
                    </property>
                    <property name="margin">
                     <number>0</number>
@@ -1555,7 +1555,7 @@ border-style: outset;</string>
                     <string>Camera Color Screen</string>
                    </property>
                    <property name="alignment">
-                    <set>Qt::AlignCenter</set>
+                    <set>Qt::AlignmentFlag::AlignCenter</set>
                    </property>
                    <property name="margin">
                     <number>0</number>
@@ -1591,7 +1591,7 @@ border-style: outset;</string>
                     <string>Camera Depth Screen</string>
                    </property>
                    <property name="alignment">
-                    <set>Qt::AlignCenter</set>
+                    <set>Qt::AlignmentFlag::AlignCenter</set>
                    </property>
                   </widget>
                  </item>

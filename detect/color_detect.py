@@ -21,12 +21,13 @@ class ColorDetector:
             return iter(astuple(self))
 
     def __init__(self) -> None:
-        self.area_low_threshold = 15000
+        self.area_low_threshold = 10000
         self.detected_name = None
         self.hsv_range = {
             "green": ((40, 50, 50), (90, 256, 256)),
             "blueA": ((91, 100, 100), (105, 256, 256)),
-            "yellow": ((20, 240, 170), (30, 256, 256)),
+            # "yellow": ((20, 240, 170), (30, 256, 256)),
+            "yellow": ((20, 100, 100), (35, 256, 256)),
             "redA": ((0, 100, 100), (6, 256, 256)),
             "redB": ((170, 100, 100), (179, 256, 256)),
             # "orange": ((8, 100, 100), (15, 256, 256)),

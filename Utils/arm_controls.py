@@ -48,16 +48,16 @@ def position_move(arm: MechArm270, x, y, z):
     target_coord.extend(curr_rotation)
     MyLogging().logger.info('Move to coords of surface: {}'.format(target_coord))
     print(f"Move to coords : {target_coord}")
-    arm.send_coords(target_coord, 30,0)
+    arm.send_coords(target_coord, 70,1)
 
 
 def release_gripper(arm: MechArm270):
-    arm.release_servo(7)
-
+    # arm.release_servo(7)
+    arm.set_gripper_state(254, 0)
 
 def open_gripper(arm: MechArm270):
     arm.set_gripper_value(95, 100)
 
 
 def close_gripper(arm: MechArm270):
-    arm.set_gripper_value(5, 100)
+    arm.set_gripper_value(45, 100)
