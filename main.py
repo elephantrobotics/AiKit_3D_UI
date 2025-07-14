@@ -1389,7 +1389,13 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
                     self.mc.send_coords(coord, 90, 1)
-                    time.sleep(4)
+                    # time.sleep(4)
+                    while self.mc.is_moving():
+                        time.sleep(0.2)
+                    time.sleep(1)
+                    if self.mc.is_in_position(coord, 1) != 1:
+                        self.mc.send_coords(coord, 70, 1)
+                    time.sleep(1)
                 elif self.algorithm_mode in ['yolov8 pump', 'yolov8 吸泵']:
                     coord[0] += final_coord_offset[0] + off_x + 5
                     coord[1] += final_coord_offset[1] + off_y
@@ -1408,7 +1414,13 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
                     # 运动至物体表面
                     self.logger.info('Target move: {}'.format(coord))
                     self.mc.send_coords(coord, 70, 1)
-                    time.sleep(4)
+                    # time.sleep(4)
+                    while self.mc.is_moving():
+                        time.sleep(0.2)
+                    time.sleep(1)
+                    if self.mc.is_in_position(coord, 1) != 1:
+                        self.mc.send_coords(coord, 70, 1)
+                    time.sleep(1)
                 elif self.algorithm_mode in ['yolov8 gripper', 'yolov8 夹爪', '颜色识别 夹爪', 'Color recognition gripper']:
                     angle = 0
                     coord[0] += final_coord_offset[0] + off_x
