@@ -192,6 +192,9 @@ class AiKit_App(AiKit_window, QMainWindow, QWidget):
         self.lastTime = None
         self.setCursor(Qt.CursorShape.ArrowCursor)
 
+    def set_btn_enabled(self, button, enabled):
+        button.setEnabled(enabled)
+
     def btn_color(self, btn, color):
         """
         设置按钮的颜色样式
