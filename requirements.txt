@@ -20,7 +20,7 @@ packaging==23.1
 Pillow==10.0.0
 psutil==5.9.5
 py-cpuinfo==9.0.0
-pymycobot==3.6.8
+pymycobot==3.9.9
 pyparsing==3.0.9
 PyQt6==6.5.2
 PyQt6-Qt6==6.5.2
